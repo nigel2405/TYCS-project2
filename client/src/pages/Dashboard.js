@@ -26,7 +26,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div ref={pageRef} className="relative z-10" style={{ opacity: 0 }}>
+    <div ref={pageRef} className="relative z-10" >
       <div
         ref={headerRef}
         className="bg-gradient-to-r from-primary-500/20 via-secondary-500/20 to-primary-500/20 backdrop-blur-xl border-b border-white/10 py-16 mb-12 relative overflow-hidden"
@@ -47,7 +47,7 @@ const Dashboard = () => {
               ref={(el) => (cardsRef.current[0] = el)}
               className="cursor-glow"
               cursorGlow
-              style={{ opacity: 0 }}
+              
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="p-4 rounded-xl bg-gradient-primary/20 border border-primary-500/30">
@@ -72,7 +72,7 @@ const Dashboard = () => {
               ref={(el) => (cardsRef.current[0] = el)}
               className="cursor-glow"
               cursorGlow
-              style={{ opacity: 0 }}
+              
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="p-4 rounded-xl bg-gradient-to-r from-secondary-500/20 to-primary-500/20 border border-secondary-500/30">
@@ -104,7 +104,7 @@ const Dashboard = () => {
                 ref={(el) => (cardsRef.current[0] = el)}
                 className="cursor-glow"
                 cursorGlow
-                style={{ opacity: 0 }}
+                
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="p-4 rounded-xl bg-gradient-to-r from-red-500/20 to-primary-500/20 border border-red-500/30">
@@ -126,7 +126,7 @@ const Dashboard = () => {
                 ref={(el) => (cardsRef.current[1] = el)}
                 className="cursor-glow"
                 cursorGlow
-                style={{ opacity: 0 }}
+                
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="p-4 rounded-xl bg-gradient-primary/20 border border-primary-500/30">
@@ -151,7 +151,7 @@ const Dashboard = () => {
             ref={(el) => (cardsRef.current[cardsRef.current.length] = el)}
             className="cursor-glow gradient-border"
             cursorGlow
-            style={{ opacity: 0 }}
+            
           >
             <div className="flex items-start justify-between mb-4">
               <div className="p-4 rounded-xl bg-gradient-to-r from-success-500/20 to-secondary-500/20 border border-success-500/30">
@@ -162,15 +162,15 @@ const Dashboard = () => {
             </div>
             <h2 className="text-2xl font-bold text-white mb-3">Wallet Balance</h2>
             <p className="text-5xl font-bold mb-2 bg-gradient-to-r from-success-500 to-secondary-500 bg-clip-text text-transparent">
-              ${user?.walletBalance?.toFixed(2) || '0.00'}
+              ₹{user?.walletBalance?.toFixed(2) || '0.00'}
             </p>
             <p className="text-white/70 mb-6 leading-relaxed">Add funds to your wallet to rent GPUs</p>
-            <button
-              onClick={() => alert('Wallet feature coming soon!')}
-              className="glass-button w-full px-6 py-3 rounded-xl text-white font-medium bg-gradient-to-r from-success-500/30 to-success-500/20 hover:shadow-lg hover:shadow-success-500/50 transition-all duration-300"
+            <Link
+              to="/add-funds"
+              className="glass-button w-full px-6 py-3 rounded-xl text-white font-medium bg-gradient-to-r from-success-500/30 to-success-500/20 hover:shadow-lg hover:shadow-success-500/50 transition-all duration-300 text-center block"
             >
               Add Funds
-            </button>
+            </Link>
           </GlassCard>
         </div>
       </div>

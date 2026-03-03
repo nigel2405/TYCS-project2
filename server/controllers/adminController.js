@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import GPU from '../models/GPU.js';
 import Session from '../models/Session.js';
+import Message from '../models/Message.js';
 import { processBillingForAllActiveSessions } from '../utils/sessionBilling.js';
 
 // @desc    Get platform statistics
@@ -311,6 +312,98 @@ export const processBilling = async (req, res, next) => {
       success: true,
       message: 'Billing processed for all active sessions',
       data: { results },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Forcefully terminate an active session (Kill Switch)
+// @route   POST /api/admin/sessions/:id/terminate
+// @access  Private (Admin)
+export const terminateSession = async (req, res, next) => {
+  try {
+    const session = await Session.findById(req.params.id)
+      .populate('provider', '_id')
+      .populate('gpu', '_id name');
+
+    if (!session) {
+      return res.status(404).json({ success: false, message: 'Session not found' });
+    }
+
+    if (session.status !== 'active') {
+      return res.status(400).json({ success: false, message: `Session is currently ${session.status}, not active.` });
+    }
+
+    // Update Session
+    session.status = 'terminated';
+    session.endTime = new Date();
+    await session.save();
+
+    // Release GPU
+    const gpu = await GPU.findById(session.gpu._id);
+    if (gpu) {
+      gpu.currentSession = null;
+      gpu.isAvailable = true;
+      await gpu.save();
+    }
+
+    // Emit socket event to provider to kill the Docker container via Python Agent
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`provider:${session.provider._id.toString()}`).emit('stop-workload', {
+        sessionId: session._id,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Session forcefully terminated.',
+      data: { session }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Forcefully unlist a GPU
+// @route   PUT /api/admin/gpus/:id/unlist
+// @access  Private (Admin)
+export const unlistGPU = async (req, res, next) => {
+  try {
+    const gpu = await GPU.findById(req.params.id);
+
+    if (!gpu) {
+      return res.status(404).json({ success: false, message: 'GPU not found' });
+    }
+
+    gpu.isActive = false; // Soft delete / hide
+    gpu.isAvailable = false;
+    await gpu.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'GPU has been forcefully unlisted from the marketplace.',
+      data: { gpu }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get chat history for a session
+// @route   GET /api/admin/sessions/:id/messages
+// @access  Private (Admin)
+export const getSessionMessages = async (req, res, next) => {
+  try {
+    const messages = await Message.find({ session: req.params.id })
+      .populate('sender', 'username role')
+      .sort({ createdAt: 1 });
+
+    res.status(200).json({
+      success: true,
+      count: messages.length,
+      data: { messages },
     });
   } catch (error) {
     next(error);

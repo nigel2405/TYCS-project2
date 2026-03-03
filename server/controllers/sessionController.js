@@ -1,7 +1,9 @@
 import Session from '../models/Session.js';
 import GPU from '../models/GPU.js';
 import User from '../models/User.js';
+import Review from '../models/Review.js';
 import { finalizeSessionBilling } from '../utils/sessionBilling.js';
+import sendEmail from '../utils/sendEmail.js';
 
 // @desc    Start a session
 // @route   POST /api/sessions/:id/start
@@ -54,12 +56,17 @@ export const startSession = async (req, res, next) => {
     session.startTime = new Date();
     session.lastBilledAt = new Date();
 
-    // Generate mock connection details
-    session.connectionDetails = {
-      ip: `192.168.1.${Math.floor(Math.random() * 255)}`,
-      port: 5900 + Math.floor(Math.random() * 100),
-      accessToken: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
-    };
+    // Emit start command to provider agent
+    const io = req.app.get('io');
+    io.to(`provider:${session.provider._id.toString()}`).emit('start-workload', {
+      sessionId: session._id,
+      gpuId: session.gpu._id,
+      workloadType: session.serviceType || 'jupyter',
+      duration: session.duration || 60,
+    });
+
+    // We don't set connectionDetails yet - waiting for agent
+    session.connectionUrl = null;
 
     // Initialize metrics
     session.metrics = {
@@ -133,6 +140,26 @@ export const stopSession = async (req, res, next) => {
       .populate('consumer', 'username email')
       .populate('provider', 'username email')
       .populate('gpu', 'name model');
+
+    // Send Receipt Email to Consumer
+    try {
+      await sendEmail({
+        email: updatedSession.consumer.email,
+        subject: `Receipt: GPU Session #${updatedSession._id.toString().substring(0, 8)}`,
+        html: `
+          <h2>Thank you for your business!</h2>
+          <p>Your session on the <strong>${updatedSession.gpu.name}</strong> has concluded.</p>
+          <ul>
+            <li><strong>Duration:</strong> ${(billingResult.duration / 60).toFixed(2)} hours</li>
+            <li><strong>Hourly Rate:</strong> $${updatedSession.hourlyRate}/hr</li>
+            <li><strong>Total Billed:</strong> $${billingResult.totalCost.toFixed(2)}</li>
+          </ul>
+          <p>This amount has been deducted from your platform wallet. You currently have $${req.user.walletBalance || 0} remaining.</p>
+        `
+      });
+    } catch (emailErr) {
+      console.error('Failed to send receipt email to consumer:', emailErr);
+    }
 
     res.status(200).json({
       success: true,
@@ -304,8 +331,8 @@ export const getMetrics = async (req, res, next) => {
 
     // Check authorization
     if (session.consumer.toString() !== req.user.id.toString() &&
-        session.provider.toString() !== req.user.id.toString() &&
-        req.user.role !== 'admin') {
+      session.provider.toString() !== req.user.id.toString() &&
+      req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to view metrics',
@@ -346,6 +373,59 @@ export const getMetrics = async (req, res, next) => {
       },
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Add a review for a completed session
+// @route   POST /api/sessions/:id/review
+// @access  Private (Consumer)
+export const addReview = async (req, res, next) => {
+  try {
+    const { rating, comment } = req.body;
+
+    // Find the session
+    const session = await Session.findById(req.params.id);
+
+    if (!session) {
+      return res.status(404).json({ success: false, message: 'Session not found' });
+    }
+
+    // Check if the user is the consumer of this session
+    if (session.consumer.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ success: false, message: 'Only the consumer of this session can review it' });
+    }
+
+    // Check if the session is completed or stopped
+    if (session.status !== 'completed' && session.status !== 'stopped') {
+      return res.status(400).json({ success: false, message: 'Can only review completed or stopped sessions' });
+    }
+
+    // Check if the review already exists
+    const existingReview = await Review.findOne({ session: session._id });
+
+    if (existingReview) {
+      return res.status(400).json({ success: false, message: 'You have already reviewed this session' });
+    }
+
+    const review = await Review.create({
+      session: session._id,
+      gpu: session.gpu,
+      consumer: req.user.id,
+      provider: session.provider,
+      rating: Number(rating),
+      comment
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Review submitted successfully',
+      data: { review }
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ success: false, message: 'You have already reviewed this session' });
+    }
     next(error);
   }
 };

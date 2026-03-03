@@ -66,7 +66,7 @@ const Login = () => {
       <div
         ref={containerRef}
         className="relative z-10 w-full max-w-md"
-        style={{ opacity: 0 }}
+
       >
         <GlassCard className="p-10 cursor-glow" cursorGlow>
           <div ref={titleRef} className="mb-8">
@@ -99,11 +99,10 @@ const Login = () => {
               />
               <label
                 htmlFor="email"
-                className={`absolute left-4 transition-all duration-300 pointer-events-none z-20 ${
-                  focusedField === 'email' || formData.email
+                className={`absolute left-4 transition-all duration-300 pointer-events-none z-20 ${focusedField === 'email' || formData.email
                     ? 'top-2 text-xs text-primary-500'
                     : 'top-4 text-base text-white/60'
-                }`}
+                  }`}
               >
                 Email Address
               </label>
@@ -126,11 +125,10 @@ const Login = () => {
               />
               <label
                 htmlFor="password"
-                className={`absolute left-4 transition-all duration-300 pointer-events-none z-20 ${
-                  focusedField === 'password' || formData.password
+                className={`absolute left-4 transition-all duration-300 pointer-events-none z-20 ${focusedField === 'password' || formData.password
                     ? 'top-2 text-xs text-primary-500'
                     : 'top-4 text-base text-white/60'
-                }`}
+                  }`}
               >
                 Password
               </label>
@@ -147,15 +145,23 @@ const Login = () => {
             </GlassButton>
           </form>
 
-          <p className="text-center mt-6 text-white/70">
-            Don't have an account?{' '}
+          <div className="flex justify-between items-center mt-6 text-white/70">
+            <p>
+              Don't have an account?{' '}
+              <Link
+                to="/register"
+                className="text-primary-500 font-medium hover:text-secondary-500 transition-colors duration-300 underline decoration-primary-500/50 hover:decoration-secondary-500"
+              >
+                Register here
+              </Link>
+            </p>
             <Link
-              to="/register"
-              className="text-primary-500 font-medium hover:text-secondary-500 transition-colors duration-300 underline decoration-primary-500/50 hover:decoration-secondary-500"
+              to="/forgotpassword"
+              className="text-white/50 hover:text-white transition-colors text-sm"
             >
-              Register here
+              Forgot Password?
             </Link>
-          </p>
+          </div>
         </GlassCard>
       </div>
     </div>

@@ -52,6 +52,15 @@ const sessionSchema = new mongoose.Schema(
       port: Number,
       accessToken: String,
     },
+    connectionUrl: {
+      type: String,
+      default: null,
+    },
+    serviceType: {
+      type: String,
+      enum: ['jupyter', 'ssh'],
+      default: 'jupyter',
+    },
     metrics: {
       gpuUtilization: [Number], // Array of percentage values over time
       temperature: [Number], // Array of temperature values

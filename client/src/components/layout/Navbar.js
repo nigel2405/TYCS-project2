@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import axios from '../../services/api';
 import { AuthContext } from '../../contexts/AuthContext';
 import { animatePageLoad, animateUnderline, animateButtonRipple } from '../../utils/animations';
 
 const Navbar = () => {
-  const { user, logout, isAuthenticated } = useContext(AuthContext);
+  const { user, logout, isAuthenticated, checkAuth } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const navRef = useRef(null);
@@ -33,6 +34,10 @@ const Navbar = () => {
     }, 300);
   };
 
+  const handleAddFunds = () => {
+    navigate('/add-funds');
+  };
+
   const NavLink = ({ to, children, className = '' }) => (
     <Link
       ref={(el) => (linkRefs.current[to] = el)}
@@ -51,7 +56,7 @@ const Navbar = () => {
     <nav
       ref={navRef}
       className="glass-dark fixed top-0 left-0 right-0 z-50 h-[80px] border-b border-white/10"
-      style={{ opacity: 0 }}
+
     >
       <div className="max-w-7xl mx-auto px-5 h-full">
         <div className="flex justify-between items-center h-full">
@@ -68,7 +73,12 @@ const Navbar = () => {
 
               {user?.role === 'provider' && <NavLink to="/provider">Provider</NavLink>}
 
-              {user?.role === 'consumer' && <NavLink to="/consumer">Marketplace</NavLink>}
+              {user?.role === 'consumer' && (
+                <>
+                  <NavLink to="/consumer">Marketplace</NavLink>
+                  <NavLink to="/consumer/billing">Billing</NavLink>
+                </>
+              )}
 
               {user?.role === 'admin' && (
                 <>
@@ -79,13 +89,20 @@ const Navbar = () => {
 
               <div className="flex items-center gap-4 pl-6 ml-6 border-l border-white/20">
                 <div className="flex flex-col items-end">
-                  <span className="font-semibold text-white text-sm">{user?.username}</span>
+                  <Link to="/profile" className="font-semibold text-white text-sm hover:text-primary-500 transition-colors">
+                    {user?.username}
+                  </Link>
                   <span className="text-white/60 text-xs capitalize">{user?.role}</span>
                 </div>
-                <div className="glass-card px-4 py-2 rounded-lg border border-primary-500/30">
+                <div
+                  onClick={handleAddFunds}
+                  className="glass-card px-4 py-2 rounded-lg border border-primary-500/30 cursor-pointer hover:bg-white/10 transition-colors"
+                  title="Click to add funds"
+                >
                   <span className="text-secondary-500 font-bold text-sm">
                     ${user?.walletBalance?.toFixed(2) || '0.00'}
                   </span>
+                  <span className="ml-2 text-xs text-white/50">+</span>
                 </div>
                 <button
                   onClick={handleLogout}

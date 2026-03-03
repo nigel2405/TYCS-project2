@@ -1,76 +1,69 @@
-// Mock GPU detection utility
-// In production, this would use actual GPU detection libraries
+import { exec } from 'child_process';
+import util from 'util';
+
+const execAsync = util.promisify(exec);
 
 export const detectGPU = async () => {
-  // Mock GPU detection - returns a random GPU configuration
-  // In production, this would use libraries like systeminformation or nvidia-smi
-  
-  const mockGPUs = [
-    {
-      name: 'NVIDIA GeForce RTX 4090',
-      manufacturer: 'NVIDIA',
-      model: 'RTX 4090',
-      vram: 24,
-      clockSpeed: 2230,
-      cudaCores: 16384,
-      memoryType: 'GDDR6X',
-      memoryBandwidth: 1008,
-      powerConsumption: 450,
-      ports: ['HDMI 2.1', 'DisplayPort 1.4a', 'DisplayPort 1.4a', 'DisplayPort 1.4a'],
-    },
-    {
-      name: 'NVIDIA GeForce RTX 4080',
-      manufacturer: 'NVIDIA',
-      model: 'RTX 4080',
-      vram: 16,
-      clockSpeed: 2210,
-      cudaCores: 9728,
-      memoryType: 'GDDR6X',
-      memoryBandwidth: 716,
-      powerConsumption: 320,
-      ports: ['HDMI 2.1', 'DisplayPort 1.4a', 'DisplayPort 1.4a', 'DisplayPort 1.4a'],
-    },
-    {
-      name: 'NVIDIA GeForce RTX 3090',
-      manufacturer: 'NVIDIA',
-      model: 'RTX 3090',
-      vram: 24,
-      clockSpeed: 1695,
-      cudaCores: 10496,
-      memoryType: 'GDDR6X',
-      memoryBandwidth: 936,
-      powerConsumption: 350,
-      ports: ['HDMI 2.1', 'DisplayPort 1.4a', 'DisplayPort 1.4a', 'DisplayPort 1.4a'],
-    },
-    {
-      name: 'AMD Radeon RX 7900 XTX',
-      manufacturer: 'AMD',
-      model: 'RX 7900 XTX',
-      vram: 24,
-      clockSpeed: 2500,
+  try {
+    // Attempt to use system commands to get real GPU data
+    let name = 'Unknown System GPU';
+    let vram = 8; // Default fallback in GB
+    let manufacturer = 'Unknown';
+
+    try {
+      if (process.platform === 'win32') {
+        const { stdout } = await execAsync('wmic path win32_VideoController get name,AdapterRAM /value');
+        const nameMatch = stdout.match(/Name=(.*)/i);
+        const ramMatch = stdout.match(/AdapterRAM=(\d+)/i);
+
+        if (nameMatch && nameMatch[1]) name = nameMatch[1].trim();
+        if (ramMatch && ramMatch[1]) vram = Math.round(parseInt(ramMatch[1], 10) / (1024 * 1024 * 1024)); // Bytes -> GB
+      } else {
+        // Linux / macOS fallback using generic lspci or nvidia-smi
+        const { stdout } = await execAsync('nvidia-smi --query-gpu=name,memory.total --format=csv,noheader');
+        const parts = stdout.split(',');
+        if (parts.length >= 2) {
+          name = parts[0].trim();
+          vram = Math.round(parseInt(parts[1].replace(/[^0-9]/g, ''), 10) / 1024); // MB -> GB
+        }
+      }
+    } catch (cmdErr) {
+      console.warn('System GPU scan commands failed, falling back to generic placeholder.');
+    }
+
+    if (name.toLowerCase().includes('nvidia')) manufacturer = 'NVIDIA';
+    else if (name.toLowerCase().includes('amd') || name.toLowerCase().includes('radeon')) manufacturer = 'AMD';
+    else if (name.toLowerCase().includes('intel')) manufacturer = 'Intel';
+    else manufacturer = 'Other';
+
+    return {
+      name: name,
+      manufacturer: manufacturer,
+      model: name,
+      vram: vram || 4, // Final fallback to 4GB if parsing failed
+      clockSpeed: 1500, // Hard to reliably extract via simple commands without admin privileges
       cudaCores: 0,
-      memoryType: 'GDDR6',
-      memoryBandwidth: 960,
-      powerConsumption: 355,
-      ports: ['HDMI 2.1', 'DisplayPort 2.1', 'DisplayPort 2.1', 'DisplayPort 2.1'],
-    },
-    {
-      name: 'NVIDIA GeForce RTX 3080',
-      manufacturer: 'NVIDIA',
-      model: 'RTX 3080',
-      vram: 10,
-      clockSpeed: 1710,
-      cudaCores: 8704,
-      memoryType: 'GDDR6X',
-      memoryBandwidth: 760,
-      powerConsumption: 320,
-      ports: ['HDMI 2.1', 'DisplayPort 1.4a', 'DisplayPort 1.4a', 'DisplayPort 1.4a'],
-    },
-  ];
+      memoryType: 'Unknown',
+      memoryBandwidth: 0,
+      powerConsumption: 0,
+      ports: ['HDMI', 'DisplayPort'],
+    };
 
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // Return a random GPU from the mock list
-  return mockGPUs[Math.floor(Math.random() * mockGPUs.length)];
+  } catch (error) {
+    console.error('Fatal error in GPU detection:', error);
+    // Generic ultimate fallback
+    return {
+      name: 'Generic GPU',
+      manufacturer: 'Unknown',
+      model: 'Unknown Model',
+      vram: 8,
+      clockSpeed: 0,
+      cudaCores: 0,
+      pricePerHour: 1.0,
+      memoryType: 'Unknown',
+      memoryBandwidth: 0,
+      powerConsumption: 0,
+      ports: [],
+    };
+  }
 };

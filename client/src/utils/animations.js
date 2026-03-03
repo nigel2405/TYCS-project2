@@ -5,9 +5,8 @@ export const animatePageLoad = (targets) => {
   anime({
     targets,
     opacity: [0, 1],
-    translateY: [30, 0],
-    duration: 800,
-    easing: 'easeOutExpo',
+    duration: 400,
+    easing: 'linear',
   });
 };
 

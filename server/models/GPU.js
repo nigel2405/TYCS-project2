@@ -14,7 +14,7 @@ const gpuSchema = new mongoose.Schema(
     },
     manufacturer: {
       type: String,
-      enum: ['NVIDIA', 'AMD', 'Intel', 'Other'],
+      enum: ['NVIDIA', 'AMD', 'Intel', 'Other', 'Unknown'],
       required: true,
     },
     model: {

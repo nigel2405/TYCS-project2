@@ -1,6 +1,7 @@
 import GPU from '../models/GPU.js';
 import Session from '../models/Session.js';
 import User from '../models/User.js';
+import sendEmail from '../utils/sendEmail.js';
 
 // @desc    Browse available GPUs
 // @route   GET /api/consumer/gpus
@@ -183,6 +184,22 @@ export const requestSession = async (req, res, next) => {
     // Update GPU
     gpu.currentSession = session._id;
     await gpu.save();
+
+    // Notify Provider via Email
+    try {
+      await sendEmail({
+        email: gpu.provider.email,
+        subject: `New Rental Request: ${gpu.name}`,
+        html: `
+          <h2>Great news! Your GPU has been rented.</h2>
+          <p>A consumer has just requested a session on your <strong>${gpu.name}</strong>.</p>
+          <p>The session is currently in <strong>pending</strong> status. Once the consumer connects and starts the workload, billing will commence at your set rate of $${gpu.pricePerHour}/hr.</p>
+          <p>Log in to your Provider Dashboard to monitor the active session.</p>
+        `
+      });
+    } catch (emailErr) {
+      console.error('Failed to send rental notification email to provider:', emailErr);
+    }
 
     res.status(201).json({
       success: true,

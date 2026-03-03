@@ -6,11 +6,17 @@ import PrivateRoute from './components/routing/PrivateRoute';
 import FloatingBlobs from './components/common/FloatingBlobs';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import ProviderDashboard from './pages/provider/ProviderDashboard';
 import ConsumerMarketplace from './pages/consumer/ConsumerMarketplace';
+import BillingHistory from './pages/consumer/BillingHistory';
+import UserProfile from './pages/UserProfile';
 import SessionDetails from './pages/sessions/SessionDetails';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AddFunds from './pages/consumer/AddFunds';
+import PaymentSuccess from './pages/consumer/PaymentSuccess';
 import './App.css';
 
 function App() {
@@ -27,55 +33,90 @@ function App() {
           <Navbar />
           <div className="relative z-10 pt-20 min-h-[calc(100vh-80px)]">
             <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            
-            <Route
-              path="/"
-              element={
-                <PrivateRoute>
-                  <Dashboard />
-                </PrivateRoute>
-              }
-            />
-            
-            <Route
-              path="/provider"
-              element={
-                <PrivateRoute allowedRoles={['provider', 'admin']}>
-                  <ProviderDashboard />
-                </PrivateRoute>
-              }
-            />
-            
-            <Route
-              path="/consumer"
-              element={
-                <PrivateRoute allowedRoles={['consumer', 'admin']}>
-                  <ConsumerMarketplace />
-                </PrivateRoute>
-              }
-            />
-            
-            <Route
-              path="/sessions/:id"
-              element={
-                <PrivateRoute>
-                  <SessionDetails />
-                </PrivateRoute>
-              }
-            />
-            
-            <Route
-              path="/admin"
-              element={
-                <PrivateRoute allowedRoles={['admin']}>
-                  <AdminDashboard />
-                </PrivateRoute>
-              }
-            />
-            
-            <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgotpassword" element={<ForgotPassword />} />
+              <Route path="/resetpassword/:resettoken" element={<ResetPassword />} />
+
+              <Route
+                path="/"
+                element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                path="/profile"
+                element={
+                  <PrivateRoute>
+                    <UserProfile />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                path="/provider"
+                element={
+                  <PrivateRoute allowedRoles={['provider', 'admin']}>
+                    <ProviderDashboard />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                path="/consumer/billing"
+                element={
+                  <PrivateRoute allowedRoles={['consumer', 'admin']}>
+                    <BillingHistory />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/add-funds"
+                element={
+                  <PrivateRoute allowedRoles={['consumer', 'admin']}>
+                    <AddFunds />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/payment-success"
+                element={
+                  <PrivateRoute allowedRoles={['consumer', 'admin']}>
+                    <PaymentSuccess />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/consumer"
+                element={
+                  <PrivateRoute allowedRoles={['consumer', 'admin']}>
+                    <ConsumerMarketplace />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                path="/sessions/:id"
+                element={
+                  <PrivateRoute>
+                    <SessionDetails />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                path="/admin"
+                element={
+                  <PrivateRoute allowedRoles={['admin']}>
+                    <AdminDashboard />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
         </div>

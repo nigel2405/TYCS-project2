@@ -32,13 +32,13 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setError(null);
-      const res = await axios.post('/auth/login', { email, password });
+      const res = await axios.post('/auth/login', { email, password, source: 'client' });
       const { token, user } = res.data.data;
-      
+
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
-      
+
       return { success: true, user };
     } catch (err) {
       const errorMsg = err.response?.data?.message || 'Login failed';
@@ -52,11 +52,11 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const res = await axios.post('/auth/register', userData);
       const { token, user } = res.data.data;
-      
+
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
-      
+
       return { success: true, user };
     } catch (err) {
       const errorMsg = err.response?.data?.message || 'Registration failed';

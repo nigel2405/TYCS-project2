@@ -137,7 +137,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div ref={pageRef} className="relative z-10" style={{ opacity: 0 }}>
+    <div ref={pageRef} className="relative z-10" >
       <PageHeader title="Admin Dashboard" subtitle="Manage platform, users, and monitor activity" />
 
       <div className="max-w-7xl mx-auto px-5 pb-12">
@@ -170,7 +170,7 @@ const AdminDashboard = () => {
                 ref={(el) => (statCardsRef.current[0] = el)}
                 className="cursor-glow bg-gradient-to-br from-primary-500/10 to-primary-500/5 border-primary-500/30"
                 cursorGlow
-                style={{ opacity: 0 }}
+                
               >
                 <h3 className="text-sm text-white/70 uppercase tracking-wide mb-4">Users</h3>
                 <div className="text-4xl font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent mb-4">
@@ -186,7 +186,7 @@ const AdminDashboard = () => {
                 ref={(el) => (statCardsRef.current[1] = el)}
                 className="cursor-glow bg-gradient-to-br from-secondary-500/10 to-secondary-500/5 border-secondary-500/30"
                 cursorGlow
-                style={{ opacity: 0 }}
+                
               >
                 <h3 className="text-sm text-white/70 uppercase tracking-wide mb-4">GPUs</h3>
                 <div className="text-4xl font-bold text-secondary-500 mb-4">{stats.gpus.total}</div>
@@ -199,7 +199,7 @@ const AdminDashboard = () => {
                 ref={(el) => (statCardsRef.current[2] = el)}
                 className="cursor-glow bg-gradient-to-br from-success-500/10 to-success-500/5 border-success-500/30"
                 cursorGlow
-                style={{ opacity: 0 }}
+                
               >
                 <h3 className="text-sm text-white/70 uppercase tracking-wide mb-4">Sessions</h3>
                 <div className="text-4xl font-bold text-success-500 mb-4">{stats.sessions.total}</div>
@@ -213,7 +213,7 @@ const AdminDashboard = () => {
                 ref={(el) => (statCardsRef.current[3] = el)}
                 className="cursor-glow gradient-border bg-gradient-to-br from-primary-500/10 to-secondary-500/5"
                 cursorGlow
-                style={{ opacity: 0 }}
+                
               >
                 <h3 className="text-sm text-white/70 uppercase tracking-wide mb-4">Total Revenue</h3>
                 <div className="text-4xl font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">

@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Database
+  mongodb:
+    image: mongo:latest
+    container_name: gpu-platform-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+  # Backend Server
+  server:
+    build: ./server
+    container_name: gpu-platform-server
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongodb:27017/gpu-sharing-platform
+      - JWT_SECRET=your_jwt_secret_key_change_in_production
+      - NODE_ENV=production
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+
+  # Client (Consumer/Provider Provider)
+  client:
+    build: ./client
+    container_name: gpu-platform-client
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+    networks:
+      - app-network
+
+  # Admin Portal
+  admin:
+    build: ./admin
+    container_name: gpu-platform-admin
+    ports:
+      - "3001:80"
+    depends_on:
+      - server
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:

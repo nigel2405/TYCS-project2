@@ -106,7 +106,7 @@ export const getMyGPUs = async (req, res, next) => {
       });
     }
 
-    const gpus = await GPU.find({ provider: req.user.id }).sort({ createdAt: -1 });
+    const gpus = await GPU.find({ provider: req.user.id, isActive: true }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,

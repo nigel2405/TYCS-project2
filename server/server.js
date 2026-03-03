@@ -13,6 +13,7 @@ import gpuProviderRoutes from './routes/gpuProviderRoutes.js';
 import gpuConsumerRoutes from './routes/gpuConsumerRoutes.js';
 import sessionRoutes from './routes/sessionRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 // Load env vars
 dotenv.config();
@@ -26,11 +27,15 @@ const app = express();
 // Create HTTP server
 const httpServer = createServer(app);
 
-// Initialize Socket.io
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: [
+      process.env.CLIENT_URL || 'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3002'
+    ],
     methods: ['GET', 'POST'],
+    credentials: true
   },
 });
 
@@ -45,6 +50,7 @@ app.use('/api/provider', gpuProviderRoutes);
 app.use('/api/consumer', gpuConsumerRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -77,6 +83,43 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`);
   });
+
+  // Provider Agent Events
+  socket.on('register-provider', (providerId) => {
+    socket.join(`provider:${providerId}`);
+    console.log(`Provider ${providerId} registered on socket ${socket.id}`);
+  });
+
+  socket.on('workload-ready', async (data) => {
+    try {
+      const { sessionId, connectionUrl, error } = data;
+      console.log(`Workload ready for session ${sessionId}:`, data);
+
+      // Update session in DB
+      const Session = (await import('./models/Session.js')).default;
+      const session = await Session.findById(sessionId);
+
+      if (session) {
+        if (error) {
+          // Handle error (optional: update status to failed)
+          console.error(`Session ${sessionId} failed to start:`, error);
+        } else {
+          session.connectionUrl = connectionUrl;
+          session.status = 'active'; // Confirmed active
+          await session.save();
+
+          // Notify consumer
+          io.to(`session:${sessionId}`).emit('session-ready', {
+            sessionId,
+            connectionUrl,
+            status: 'active'
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Error handling workload-ready:', err);
+    }
+  });
 });
 
 // Make io accessible to routes
@@ -88,7 +131,7 @@ setInterval(async () => {
     console.log('Processing billing for all active sessions...');
     const results = await processBillingForAllActiveSessions();
     console.log(`Billing processed. Results: ${results.length} sessions processed.`);
-    
+
     // Emit billing updates via Socket.io
     results.forEach((result) => {
       if (result.billed) {

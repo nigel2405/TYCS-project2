@@ -100,7 +100,7 @@ const ConsumerMarketplace = () => {
   }
 
   return (
-    <div ref={pageRef} className="relative z-10" style={{ opacity: 0 }}>
+    <div ref={pageRef} className="relative z-10" >
       <PageHeader title="GPU Marketplace" subtitle="Browse and rent available GPUs" />
 
       <div className="max-w-7xl mx-auto px-5 pb-12">
@@ -114,7 +114,7 @@ const ConsumerMarketplace = () => {
           ref={filtersRef}
           className="mb-8 cursor-glow"
           cursorGlow
-          style={{ opacity: 0 }}
+
         >
           <h3 className="text-xl font-bold text-white mb-6">Filters</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -123,8 +123,8 @@ const ConsumerMarketplace = () => {
               { name: 'manufacturer', label: 'Manufacturer', type: 'select', options: ['', 'NVIDIA', 'AMD', 'Intel'] },
               { name: 'minVRAM', label: 'Min VRAM (GB)', type: 'number', placeholder: 'e.g., 8' },
               { name: 'maxVRAM', label: 'Max VRAM (GB)', type: 'number', placeholder: 'e.g., 24' },
-              { name: 'minPrice', label: 'Min Price ($/hr)', type: 'number', step: '0.01', placeholder: 'e.g., 1.00' },
-              { name: 'maxPrice', label: 'Max Price ($/hr)', type: 'number', step: '0.01', placeholder: 'e.g., 10.00' },
+              { name: 'minPrice', label: 'Min Price (₹/hr)', type: 'number', step: '0.01', placeholder: 'e.g., 1.00' },
+              { name: 'maxPrice', label: 'Max Price (₹/hr)', type: 'number', step: '0.01', placeholder: 'e.g., 10.00' },
               { name: 'sortBy', label: 'Sort By', type: 'select', options: ['pricePerHour', 'vram', 'rating.average', 'createdAt'] },
               { name: 'sortOrder', label: 'Order', type: 'select', options: ['asc', 'desc'] },
             ].map((field) => (
@@ -181,11 +181,10 @@ const ConsumerMarketplace = () => {
                   />
                 )}
                 <label
-                  className={`absolute left-4 transition-all duration-300 pointer-events-none z-20 ${
-                    focusedField === field.name || filters[field.name]
-                      ? 'top-2 text-xs text-primary-500'
-                      : 'top-4 text-base text-white/60'
-                  }`}
+                  className={`absolute left-4 transition-all duration-300 pointer-events-none z-20 ${focusedField === field.name || filters[field.name]
+                    ? 'top-2 text-xs text-primary-500'
+                    : 'top-4 text-base text-white/60'
+                    }`}
                 >
                   {field.label}
                 </label>
@@ -206,7 +205,7 @@ const ConsumerMarketplace = () => {
                 ref={(el) => (cardsRef.current[index] = el)}
                 className="cursor-glow gradient-border"
                 cursorGlow
-                style={{ opacity: 0 }}
+
               >
                 <h3 className="text-xl font-bold text-white mb-4">{gpu.name}</h3>
                 <div className="space-y-2 mb-5">
@@ -217,10 +216,19 @@ const ConsumerMarketplace = () => {
                   {gpu.cudaCores > 0 && <p className="text-white/70"><strong className="text-white">CUDA Cores:</strong> {gpu.cudaCores}</p>}
                   <p className="text-white/70">
                     <strong className="text-white">Price:</strong>
-                    <span className="text-secondary-500 text-xl font-bold ml-2"> ${gpu.pricePerHour}/hour</span>
+                    <span className="text-secondary-500 text-xl font-bold ml-2"> ₹{gpu.pricePerHour}/hour</span>
                   </p>
                   {gpu.rating && gpu.rating.count > 0 && (
-                    <p className="text-white/70"><strong className="text-white">Rating:</strong> {gpu.rating.average.toFixed(1)}/5 ({gpu.rating.count} reviews)</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex text-yellow-400 text-lg">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <span key={star}>{gpu.rating.average >= star ? '★' : '☆'}</span>
+                        ))}
+                      </div>
+                      <span className="text-white/70 text-sm">
+                        {gpu.rating.average.toFixed(1)}/5 ({gpu.rating.count} {gpu.rating.count === 1 ? 'review' : 'reviews'})
+                      </span>
+                    </div>
                   )}
                   <p className="text-white/70"><strong className="text-white">Provider:</strong> {gpu.provider?.username || 'Unknown'}</p>
                 </div>
