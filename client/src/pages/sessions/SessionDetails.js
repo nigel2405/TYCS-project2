@@ -71,7 +71,7 @@ const SessionDetails = () => {
 
   // Socket connection
   useEffect(() => {
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io(process.env.REACT_APP_API_URL || '');
     setSocket(newSocket);
 
     newSocket.emit('join-session', id);
