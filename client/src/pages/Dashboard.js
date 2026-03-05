@@ -162,7 +162,7 @@ const Dashboard = () => {
             </div>
             <h2 className="text-2xl font-bold text-white mb-3">Wallet Balance</h2>
             <p className="text-5xl font-bold mb-2 bg-gradient-to-r from-success-500 to-secondary-500 bg-clip-text text-transparent">
-              ₹{user?.walletBalance?.toFixed(2) || '0.00'}
+              ${user?.walletBalance?.toFixed(2) || '0.00'}
             </p>
             <p className="text-white/70 mb-6 leading-relaxed">Add funds to your wallet to rent GPUs</p>
             <Link

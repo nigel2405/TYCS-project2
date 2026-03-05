@@ -161,7 +161,7 @@ const ProviderDashboard = () => {
               <GlassCard className="p-6 bg-gradient-to-br from-primary-500/10 to-primary-500/5 border-primary-500/30">
                 <span className="text-sm text-white/70 mb-2 block">Total Earnings</span>
                 <span className="text-3xl font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
-                  ₹{earnings.totalEarnings?.toFixed(2) || '0.00'}
+                  ${earnings.totalEarnings?.toFixed(2) || '0.00'}
                 </span>
               </GlassCard>
               <GlassCard className="p-6 bg-gradient-to-br from-secondary-500/10 to-secondary-500/5 border-secondary-500/30">
@@ -242,7 +242,7 @@ const ProviderDashboard = () => {
                     <h3 className="text-lg font-bold text-white mb-2">Session with {session.consumer?.username || 'Client'}</h3>
                     <p className="text-white/70 text-sm mb-4">
                       GPU: {session.gpu ? session.gpu.name : 'Unknown'}<br />
-                      Rate: ₹{session.hourlyRate}/hr
+                      Rate: ${session.hourlyRate}/hr
                     </p>
                     <GlassButton
                       variant="primary"
@@ -311,7 +311,7 @@ const ProviderDashboard = () => {
                       : 'top-4 text-base text-white/60'
                       }`}
                   >
-                    Price per Hour (₹)
+                    Price per Hour ($)
                   </label>
                 </div>
                 <div className="flex items-center gap-3">
@@ -346,14 +346,14 @@ const ProviderDashboard = () => {
                   <div className="space-y-2 mb-5">
                     <p className="text-white/70"><strong className="text-white">Model:</strong> {gpu.manufacturer} {gpu.model}</p>
                     <p className="text-white/70"><strong className="text-white">VRAM:</strong> {gpu.vram} GB</p>
-                    <p className="text-white/70"><strong className="text-white">Price:</strong> <span className="text-secondary-500 font-semibold">₹{gpu.pricePerHour}/hour</span></p>
+                    <p className="text-white/70"><strong className="text-white">Price:</strong> <span className="text-secondary-500 font-semibold">${gpu.pricePerHour}/hour</span></p>
                     <p className="text-white/70">
                       <strong className="text-white">Status:</strong>
                       <span className={gpu.isAvailable ? 'text-success-500 font-semibold ml-2' : 'text-red-400 font-semibold ml-2'}>
                         {gpu.isAvailable ? 'Available' : 'Unavailable'}
                       </span>
                     </p>
-                    <p className="text-white/70"><strong className="text-white">Total Earnings:</strong> <span className="text-primary-500">₹{gpu.totalEarnings?.toFixed(2) || '0.00'}</span></p>
+                    <p className="text-white/70"><strong className="text-white">Total Earnings:</strong> <span className="text-primary-500">${gpu.totalEarnings?.toFixed(2) || '0.00'}</span></p>
                     <p className="text-white/70"><strong className="text-white">Hours Rented:</strong> {gpu.totalHoursRented?.toFixed(2) || '0.00'}</p>
                   </div>
                   <div className="flex gap-2">

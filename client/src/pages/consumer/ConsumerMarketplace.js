@@ -123,8 +123,8 @@ const ConsumerMarketplace = () => {
               { name: 'manufacturer', label: 'Manufacturer', type: 'select', options: ['', 'NVIDIA', 'AMD', 'Intel'] },
               { name: 'minVRAM', label: 'Min VRAM (GB)', type: 'number', placeholder: 'e.g., 8' },
               { name: 'maxVRAM', label: 'Max VRAM (GB)', type: 'number', placeholder: 'e.g., 24' },
-              { name: 'minPrice', label: 'Min Price (₹/hr)', type: 'number', step: '0.01', placeholder: 'e.g., 1.00' },
-              { name: 'maxPrice', label: 'Max Price (₹/hr)', type: 'number', step: '0.01', placeholder: 'e.g., 10.00' },
+              { name: 'minPrice', label: 'Min Price ($/hr)', type: 'number', step: '0.01', placeholder: 'e.g., 1.00' },
+              { name: 'maxPrice', label: 'Max Price ($/hr)', type: 'number', step: '0.01', placeholder: 'e.g., 10.00' },
               { name: 'sortBy', label: 'Sort By', type: 'select', options: ['pricePerHour', 'vram', 'rating.average', 'createdAt'] },
               { name: 'sortOrder', label: 'Order', type: 'select', options: ['asc', 'desc'] },
             ].map((field) => (
@@ -216,7 +216,7 @@ const ConsumerMarketplace = () => {
                   {gpu.cudaCores > 0 && <p className="text-white/70"><strong className="text-white">CUDA Cores:</strong> {gpu.cudaCores}</p>}
                   <p className="text-white/70">
                     <strong className="text-white">Price:</strong>
-                    <span className="text-secondary-500 text-xl font-bold ml-2"> ₹{gpu.pricePerHour}/hour</span>
+                    <span className="text-secondary-500 text-xl font-bold ml-2"> ${gpu.pricePerHour}/hour</span>
                   </p>
                   {gpu.rating && gpu.rating.count > 0 && (
                     <div className="flex items-center gap-2 mt-1">

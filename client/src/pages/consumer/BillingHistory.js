@@ -94,10 +94,10 @@ const BillingHistory = () => {
                                                 {Math.round((session.duration || 0) / 60)}h {Math.round((session.duration || 0) % 60)}m
                                             </td>
                                             <td className="px-4 py-3 text-white/70">
-                                                ₹{session.hourlyRate}/hr
+                                                ${session.hourlyRate}/hr
                                             </td>
                                             <td className="px-4 py-3 text-secondary-500 font-bold">
-                                                ₹{session.totalCost?.toFixed(2)}
+                                                ${session.totalCost?.toFixed(2)}
                                             </td>
                                             <td className="px-4 py-3">
                                                 <GlassButton
