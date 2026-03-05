@@ -27,12 +27,12 @@ router.post('/create-order', protect, async (req, res) => {
     request.prefer("return=representation");
     request.requestBody({
         intent: 'CAPTURE',
+        application_context: {
+            return_url: `${process.env.CLIENT_URL || 'http://localhost:3000'}/payment-success`,
+            cancel_url: `${process.env.CLIENT_URL || 'http://localhost:3000'}/add-funds`
+        },
         purchase_units: [{
             amount: {
-                currency_code: 'USD', // PayPal Sandbox often defaults to USD. Let's use USD for reliability in sandbox, assuming 1 USD = 1 Credit for now to avoid conversion logic complexity, OR simply charge in USD. 
-                // User asked for INR. 
-                // If we pass 'INR', and the sandbox account isn't set up for it, it might fail. 
-                // Let's genericize: We charge 1 USD for every 85 INR? No, let's try strict INR.
                 currency_code: 'USD',
                 value: (amount / 85).toFixed(2) // Rough conversion for Sandbox testing
             }
