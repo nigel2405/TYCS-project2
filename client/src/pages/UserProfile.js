@@ -102,7 +102,7 @@ const UserProfile = () => {
                             <p className="text-white/60 text-sm mb-4 capitalize">{user?.role}</p>
                             <div className="glass-card bg-white/5 p-3 rounded-lg">
                                 <p className="text-xs text-white/50 uppercase tracking-wider mb-1">Wallet Balance</p>
-                                <p className="text-xl font-bold text-secondary-500">₹{user?.walletBalance?.toFixed(2)}</p>
+                                <p className="text-xl font-bold text-secondary-500">${user?.walletBalance?.toFixed(2)}</p>
                             </div>
                         </GlassCard>
                     </div>
