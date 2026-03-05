@@ -34,7 +34,7 @@ router.post('/create-order', protect, async (req, res) => {
         purchase_units: [{
             amount: {
                 currency_code: 'USD',
-                value: (amount / 85).toFixed(2) // Rough conversion for Sandbox testing
+                value: parseFloat(amount).toFixed(2) // Charge the exact requested amount
             }
         }]
     });
@@ -68,9 +68,9 @@ router.post('/capture-order', protect, async (req, res) => {
                 try {
                     // Extract the actual captured USD amount from PayPal's response
                     const paidUsd = parseFloat(capture.result.purchase_units[0].payments.captures[0].amount.value);
-                    const creditedInr = Math.round(paidUsd * 85); // Convert back to INR
+                    const creditedAmount = Math.round(paidUsd); // Add the USD value
 
-                    user.walletBalance = (user.walletBalance || 0) + creditedInr;
+                    user.walletBalance = (user.walletBalance || 0) + creditedAmount;
                     await user.save();
                     return res.json({ success: true, walletBalance: user.walletBalance });
                 } catch (parseError) {
