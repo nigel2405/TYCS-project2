@@ -19,8 +19,12 @@ const ProviderDashboard = () => {
   const [formData, setFormData] = useState({
     name: '',
     pricePerHour: '',
-    autoDetect: true,
+    manufacturer: '',
+    model: '',
+    vram: '',
   });
+  const [maxVram, setMaxVram] = useState(null);
+  const [isScanning, setIsScanning] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
   const navigate = useNavigate();
 
@@ -81,15 +85,43 @@ const ProviderDashboard = () => {
     }
   };
 
+  const handleScanGPU = async (e) => {
+    e.preventDefault();
+    setError('');
+    setIsScanning(true);
+    try {
+      const res = await axios.get('/provider/gpus/detect');
+      const specs = res.data.data.gpuSpecs;
+      setMaxVram(specs.vram);
+      setFormData(prev => ({
+        ...prev,
+        manufacturer: specs.manufacturer,
+        model: specs.model,
+        vram: specs.vram, // Default to sharing all of it
+        name: `${specs.manufacturer} ${specs.model}`
+      }));
+      setSuccessMsg('Hardware scanned successfully!');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to scan hardware.');
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   const handleRegisterGPU = async (e) => {
     e.preventDefault();
     setError('');
 
+    if (!formData.manufacturer || !formData.model) {
+      return setError('Please scan your hardware first before registering.');
+    }
+
     try {
       const res = await axios.post('/provider/gpus', formData);
-      setGPUs([...gpus, res.data.data.gpu]);
+      setGPUs([res.data.data.gpu, ...gpus]);
       setShowRegisterForm(false);
-      setFormData({ name: '', pricePerHour: '', autoDetect: true });
+      setFormData({ name: '', pricePerHour: '', manufacturer: '', model: '', vram: '' });
+      setMaxVram(null);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to register GPU');
     }
@@ -314,16 +346,85 @@ const ProviderDashboard = () => {
                     Price per Hour ($)
                   </label>
                 </div>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={formData.autoDetect}
-                    onChange={(e) => setFormData({ ...formData, autoDetect: e.target.checked })}
-                    className="w-5 h-5 rounded border-white/20 bg-white/5 text-primary-500 focus:ring-primary-500"
-                  />
-                  <label className="text-white/80">Auto-detect GPU specifications (mock)</label>
+                {/* Hardware Scanning Section */}
+                <div className="p-4 glass-card bg-white/5 border border-white/10 rounded-xl space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-white font-semibold">Hardware Specifications</h4>
+                    {maxVram ? (
+                      <span className="text-xs bg-success-500/20 text-success-300 px-3 py-1 rounded-full border border-success-500/30">
+                        Scanned Successfully
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-white/10 text-white/50 px-3 py-1 rounded-full">
+                        Pending Scan
+                      </span>
+                    )}
+                  </div>
+
+                  {!maxVram ? (
+                    <GlassButton
+                      onClick={handleScanGPU}
+                      type="button"
+                      variant="secondary"
+                      className="w-full flex justify-center items-center gap-2"
+                      disabled={isScanning}
+                    >
+                      {isScanning ? (
+                        <>
+                          <div className="w-4 h-4 rounded-full border-2 border-primary-500 border-t-transparent animate-spin"></div>
+                          Scanning Hardware...
+                        </>
+                      ) : (
+                        'Scan My PC Hardware'
+                      )}
+                    </GlassButton>
+                  ) : (
+                    <div className="space-y-4 animate-fade-in">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white/5 p-3 rounded-lg border border-white/5">
+                          <p className="text-xs text-white/50 mb-1">Detected Manufacturer</p>
+                          <p className="text-white font-medium">{formData.manufacturer}</p>
+                        </div>
+                        <div className="bg-white/5 p-3 rounded-lg border border-white/5">
+                          <p className="text-xs text-white/50 mb-1">Detected Model</p>
+                          <p className="text-white font-medium">{formData.model}</p>
+                        </div>
+                      </div>
+
+                      <div className="relative mt-2">
+                        <div className="flex justify-between items-end mb-2">
+                          <label className="text-sm text-white/80">VRAM to Share (GB)</label>
+                          <span className="text-xs text-primary-500">Max Physical Limit: {maxVram} GB</span>
+                        </div>
+                        <input
+                          type="number"
+                          step="1"
+                          min="1"
+                          max={maxVram}
+                          value={formData.vram}
+                          onChange={(e) => setFormData({ ...formData, vram: Math.min(Math.max(1, e.target.value), maxVram) })}
+                          required
+                          className="w-full px-4 py-3 rounded-xl border border-white/20 bg-white/5 backdrop-blur-md text-white focus:outline-none focus:border-primary-500/50 focus:shadow-glow-primary transition-all duration-300"
+                        />
+                        <p className="text-xs text-white/50 mt-2">
+                          How much of your physical memory do you want to allocate for client workloads? Sharing less VRAM lets you keep more for yourself while the container runs.
+                        </p>
+                      </div>
+
+                      <GlassButton
+                        onClick={handleScanGPU}
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="w-full mt-2"
+                      >
+                        Rescan Hardware
+                      </GlassButton>
+                    </div>
+                  )}
                 </div>
-                <GlassButton type="submit" variant="primary" className="w-full">
+
+                <GlassButton type="submit" variant="primary" className="w-full" disabled={!maxVram}>
                   Register GPU
                 </GlassButton>
               </div>

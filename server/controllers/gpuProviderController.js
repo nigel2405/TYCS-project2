@@ -19,42 +19,38 @@ export const registerGPU = async (req, res, next) => {
 
     let gpuSpecs = {};
 
-    // Auto-detect GPU specs if requested
-    if (autoDetect) {
-      gpuSpecs = await detectGPU();
-    } else {
-      // Manual GPU registration requires all specs
-      const {
-        manufacturer,
-        model,
-        vram,
-        clockSpeed,
-        cudaCores,
-        memoryType,
-        memoryBandwidth,
-        powerConsumption,
-        ports,
-      } = req.body;
+    // removed autoDetect logic in favor of manual submission from getDetectGPU flow
+    // Manual GPU registration requires all specs
+    const {
+      manufacturer,
+      model,
+      vram,
+      clockSpeed,
+      cudaCores,
+      memoryType,
+      memoryBandwidth,
+      powerConsumption,
+      ports,
+    } = req.body;
 
-      if (!manufacturer || !model || !vram) {
-        return res.status(400).json({
-          success: false,
-          message: 'Please provide GPU specifications (manufacturer, model, vram)',
-        });
-      }
-
-      gpuSpecs = {
-        manufacturer,
-        model,
-        vram: parseInt(vram),
-        clockSpeed: clockSpeed ? parseInt(clockSpeed) : 0,
-        cudaCores: cudaCores ? parseInt(cudaCores) : 0,
-        memoryType,
-        memoryBandwidth,
-        powerConsumption,
-        ports: ports ? (Array.isArray(ports) ? ports : [ports]) : [],
-      };
+    if (!manufacturer || !model || !vram) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide GPU specifications (manufacturer, model, vram)',
+      });
     }
+
+    gpuSpecs = {
+      manufacturer,
+      model,
+      vram: parseInt(vram),
+      clockSpeed: clockSpeed ? parseInt(clockSpeed) : 0,
+      cudaCores: cudaCores ? parseInt(cudaCores) : 0,
+      memoryType,
+      memoryBandwidth,
+      powerConsumption,
+      ports: ports ? (Array.isArray(ports) ? ports : [ports]) : [],
+    };
 
     if (!pricePerHour || pricePerHour < 0.01) {
       return res.status(400).json({
@@ -352,6 +348,30 @@ export const getSessionHistory = async (req, res, next) => {
       count: sessions.length,
       total,
       data: { sessions },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Detect system GPU automatically without saving
+// @route   GET /api/provider/gpus/detect
+// @access  Private (Provider)
+export const getDetectGPU = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'provider' || !req.user.isProviderApproved) {
+      return res.status(403).json({
+        success: false,
+        message: 'You must be an approved provider to detect GPUs',
+      });
+    }
+
+    const gpuSpecs = await detectGPU();
+
+    res.status(200).json({
+      success: true,
+      message: 'GPU detected successfully',
+      data: { gpuSpecs },
     });
   } catch (error) {
     next(error);

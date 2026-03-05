@@ -7,6 +7,7 @@ import {
   deleteGPU,
   getEarnings,
   getSessionHistory,
+  getDetectGPU,
 } from '../controllers/gpuProviderController.js';
 import { protect, authorize } from '../middleware/auth.js';
 
@@ -19,6 +20,7 @@ router.use(authorize('provider'));
 // GPU management routes
 router.post('/gpus', registerGPU);
 router.get('/gpus', getMyGPUs);
+router.get('/gpus/detect', getDetectGPU);
 router.get('/gpus/:id', getGPU);
 router.put('/gpus/:id', updateGPU);
 router.delete('/gpus/:id', deleteGPU);

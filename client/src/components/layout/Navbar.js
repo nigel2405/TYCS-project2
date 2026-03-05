@@ -94,16 +94,25 @@ const Navbar = () => {
                   </Link>
                   <span className="text-white/60 text-xs capitalize">{user?.role}</span>
                 </div>
-                <div
-                  onClick={handleAddFunds}
-                  className="glass-card px-4 py-2 rounded-lg border border-primary-500/30 cursor-pointer hover:bg-white/10 transition-colors"
-                  title="Click to add funds"
-                >
-                  <span className="text-secondary-500 font-bold text-sm">
-                    ${user?.walletBalance?.toFixed(2) || '0.00'}
-                  </span>
-                  <span className="ml-2 text-xs text-white/50">+</span>
-                </div>
+                {user?.role === 'provider' ? (
+                  <div className="glass-card px-4 py-2 rounded-lg border border-primary-500/30">
+                    <span className="text-secondary-500 font-bold text-sm">
+                      ${user?.walletBalance?.toFixed(2) || '0.00'}
+                    </span>
+                  </div>
+                ) : (
+                  <div
+                    onClick={handleAddFunds}
+                    className="glass-card px-4 py-2 rounded-lg border border-primary-500/30 cursor-pointer hover:bg-white/10 transition-colors"
+                    title="Click to add funds"
+                  >
+                    <span className="text-secondary-500 font-bold text-sm">
+                      ${user?.walletBalance?.toFixed(2) || '0.00'}
+                    </span>
+                    <span className="ml-2 text-xs text-white/50">+</span>
+                  </div>
+                )}
+
                 <button
                   onClick={handleLogout}
                   className="glass-button px-4 py-2 rounded-lg text-white text-sm font-medium hover:shadow-glow-primary transition-all duration-300 relative overflow-hidden"
