@@ -270,7 +270,7 @@ const SessionDetails = () => {
               </div>
               <div className="flex justify-between py-3 border-b border-white/10">
                 <strong className="text-white/90">Hourly Rate:</strong>
-                <span className="text-secondary-500 font-semibold">${session.hourlyRate}/hour</span>
+                <span className="text-secondary-500 font-semibold">₹{session.hourlyRate}/hour</span>
               </div>
               <div className="flex justify-between py-3 border-b border-white/10">
                 <strong className="text-white/90">Duration:</strong>
@@ -278,7 +278,7 @@ const SessionDetails = () => {
               </div>
               <div className="flex justify-between py-3 border-b border-white/10">
                 <strong className="text-white/90">Total Cost:</strong>
-                <span className="text-primary-500 font-bold text-lg">${session.totalCost?.toFixed(2) || '0.00'}</span>
+                <span className="text-primary-500 font-bold text-lg">₹{session.totalCost?.toFixed(2) || '0.00'}</span>
               </div>
               {session.startTime && (
                 <div className="flex justify-between py-3 border-b border-white/10">

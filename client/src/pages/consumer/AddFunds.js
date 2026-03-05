@@ -57,9 +57,9 @@ const AddFunds = () => {
                 <GlassCard className="cursor-glow" cursorGlow>
                     <form onSubmit={handlePayment} className="space-y-6">
                         <div>
-                            <label className="block text-sm text-white/70 mb-2">Amount ($)</label>
+                            <label className="block text-sm text-white/70 mb-2">Amount (₹)</label>
                             <div className="relative">
-                                <span className="absolute left-4 top-3.5 text-white/50">$</span>
+                                <span className="absolute left-4 top-3.5 text-white/50">₹</span>
                                 <input
                                     type="number"
                                     min="1"

@@ -47,7 +47,7 @@ const Dashboard = () => {
               ref={(el) => (cardsRef.current[0] = el)}
               className="cursor-glow"
               cursorGlow
-              
+
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="p-4 rounded-xl bg-gradient-primary/20 border border-primary-500/30">
@@ -72,7 +72,7 @@ const Dashboard = () => {
               ref={(el) => (cardsRef.current[0] = el)}
               className="cursor-glow"
               cursorGlow
-              
+
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="p-4 rounded-xl bg-gradient-to-r from-secondary-500/20 to-primary-500/20 border border-secondary-500/30">
@@ -104,7 +104,7 @@ const Dashboard = () => {
                 ref={(el) => (cardsRef.current[0] = el)}
                 className="cursor-glow"
                 cursorGlow
-                
+
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="p-4 rounded-xl bg-gradient-to-r from-red-500/20 to-primary-500/20 border border-red-500/30">
@@ -126,7 +126,7 @@ const Dashboard = () => {
                 ref={(el) => (cardsRef.current[1] = el)}
                 className="cursor-glow"
                 cursorGlow
-                
+
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="p-4 rounded-xl bg-gradient-primary/20 border border-primary-500/30">
@@ -151,7 +151,7 @@ const Dashboard = () => {
             ref={(el) => (cardsRef.current[cardsRef.current.length] = el)}
             className="cursor-glow gradient-border"
             cursorGlow
-            
+
           >
             <div className="flex items-start justify-between mb-4">
               <div className="p-4 rounded-xl bg-gradient-to-r from-success-500/20 to-secondary-500/20 border border-success-500/30">
@@ -162,7 +162,7 @@ const Dashboard = () => {
             </div>
             <h2 className="text-2xl font-bold text-white mb-3">Wallet Balance</h2>
             <p className="text-5xl font-bold mb-2 bg-gradient-to-r from-success-500 to-secondary-500 bg-clip-text text-transparent">
-              ${user?.walletBalance?.toFixed(2) || '0.00'}
+              ₹{user?.walletBalance?.toFixed(2) || '0.00'}
             </p>
             <p className="text-white/70 mb-6 leading-relaxed">Add funds to your wallet to rent GPUs</p>
             <Link

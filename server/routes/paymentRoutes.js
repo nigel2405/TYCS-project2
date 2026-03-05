@@ -33,8 +33,8 @@ router.post('/create-order', protect, async (req, res) => {
         },
         purchase_units: [{
             amount: {
-                currency_code: 'USD',
-                value: parseFloat(amount).toFixed(2) // Charge the exact requested amount in USD
+                currency_code: 'INR',
+                value: parseFloat(amount).toFixed(2) // Charge the exact requested amount in INR
             }
         }]
     });
