@@ -367,55 +367,35 @@ export const getDetectGPU = async (req, res, next) => {
     }
 
     const io = req.app.get('io');
-    const providerId = req.user.id;
+    const providerId = req.user.id.toString();
 
-    // We check if at least one agent is connected for this provider
-    const rooms = io.sockets.adapter.rooms;
-    const providerRoom = rooms.get(`provider:${providerId}`);
+    // Finding the agent socket more reliably by checking all sockets for the providerId property
+    const allSockets = await io.fetchSockets();
+    const agentSocket = allSockets.find(s => s.providerId === providerId);
 
-    if (!providerRoom || providerRoom.size === 0) {
+    if (!agentSocket) {
       return res.status(400).json({
         success: false,
-        message: 'No active GPU Agent detected. Please make sure your agent script is running on your PC.',
+        message: 'No active GPU Agent detected. Please make sure your agent script is running on your PC and showing "Connected".',
       });
     }
 
-    // Emit request to the provider's agent(s)
-    io.to(`provider:${providerId}`).emit('request-gpu-scan', { providerId });
+    // Emit request to the specific agent socket
+    agentSocket.emit('request-gpu-scan', { providerId });
 
-    // We'll wait for the response via a temporary listener or a promise
-    // To keep it simple and stateless for now, we'll use a one-time listener with a timeout
     const getSpecsFromAgent = () => {
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
-          io.off('gpu-scan-results', handler);
-          reject(new Error('Hardware scan timed out. Please check if your agent is connected.'));
+          reject(new Error('Hardware scan timed out. Please check if your agent is still connected.'));
         }, 15000);
 
-        const handler = (data) => {
-          // Check if this result is for the current provider
-          // (Agent might need to send providerId back)
-          // For now, since it's a room-based emit, we just take the first one that matches
-          // In a production environment, we'd use a unique request ID.
+        // Clear previous listeners to avoid memory leaks or duplicate responses
+        agentSocket.removeAllListeners('gpu-scan-results');
+
+        agentSocket.once('gpu-scan-results', (results) => {
           clearTimeout(timeout);
-          resolve(data);
-        };
-
-        // Note: This global listener is a bit risky if multiple providers scan at once.
-        // Let's refine the socket handler in server.js to emit to specific "scanners".
-        // For now, we'll use a better approach: the agent sends results, and we catch them.
-
-        // Better: Listen for a specific event from the socket
-        const sockets = io.sockets.adapter.rooms.get(`provider:${providerId}`);
-        if (sockets) {
-          const socketId = Array.from(sockets)[0];
-          const socket = io.sockets.sockets.get(socketId);
-
-          socket.once('gpu-scan-results', (results) => {
-            clearTimeout(timeout);
-            resolve(results);
-          });
-        }
+          resolve(results);
+        });
       });
     };
 

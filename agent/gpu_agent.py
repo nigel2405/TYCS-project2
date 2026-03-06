@@ -24,7 +24,7 @@ if not PROVIDER_ID:
 active_workloads = {}
 
 def detect_gpu():
-    """Detects local GPU hardware specifications."""
+    """Detects local GPU hardware specifications, prioritizing dedicated hardware."""
     gpu_info = {
         "manufacturer": "Unknown",
         "model": "Unknown Model",
@@ -32,38 +32,62 @@ def detect_gpu():
     }
     
     try:
-        if os.name == 'nt':  # Windows
-            # Get GPU Name
-            cmd = "wmic path win32_VideoController get name"
-            output = subprocess.check_output(cmd, shell=True).decode()
-            lines = [l.strip() for l in output.split('\n') if l.strip() and 'Name' not in l]
-            if lines:
-                gpu_info["model"] = lines[0]
-                if "nvidia" in lines[0].lower(): gpu_info["manufacturer"] = "NVIDIA"
-                elif "amd" in lines[0].lower() or "radeon" in lines[0].lower(): gpu_info["manufacturer"] = "AMD"
-                elif "intel" in lines[0].lower(): gpu_info["manufacturer"] = "Intel"
+        # Strategy 1: Try nvidia-smi (Most accurate for NVIDIA)
+        try:
+            output = subprocess.check_output("nvidia-smi --query-gpu=gpu_name,memory.total --format=csv,noheader,nounits", shell=True, stderr=subprocess.DEVNULL).decode()
+            parts = output.strip().split(',')
+            if len(parts) >= 2:
+                gpu_info["model"] = parts[0].strip()
+                gpu_info["manufacturer"] = "NVIDIA"
+                gpu_info["vram"] = max(1, round(int(parts[1].strip()) / 1024))
+                print(f"[DEBUG] NVIDIA detected via nvidia-smi: {gpu_info['model']}")
+                return gpu_info
+        except:
+            pass
 
-            # Get VRAM (AdapterRAM is in bytes)
-            cmd = "wmic path win32_VideoController get AdapterRAM"
+        # Strategy 2: Windows wmic (Fallback)
+        if os.name == 'nt':
+            cmd = "wmic path win32_VideoController get name, AdapterRAM /format:list"
             output = subprocess.check_output(cmd, shell=True).decode()
-            ram_lines = [l.strip() for l in output.split('\n') if l.strip() and 'AdapterRAM' not in l]
-            if ram_lines:
-                try:
-                    bytes_val = int(ram_lines[0])
-                    gpu_info["vram"] = max(1, round(bytes_val / (1024**3))) # Convert to GB
-                except:
-                    pass
-        else: # Linux/Mac (Basic fallback)
-            try:
-                # Try nvidia-smi if available
-                output = subprocess.check_output("nvidia-smi --query-gpu=gpu_name,memory.total --format=csv,noheader,nounits", shell=True).decode()
-                parts = output.strip().split(',')
-                if len(parts) >= 2:
-                    gpu_info["model"] = parts[0].strip()
-                    gpu_info["manufacturer"] = "NVIDIA"
-                    gpu_info["vram"] = max(1, round(int(parts[1].strip()) / 1024))
-            except:
-                pass
+            
+            # Parse list format (Name=..., AdapterRAM=...)
+            current_gpu = {}
+            best_gpu = None
+            
+            for line in output.split('\n'):
+                line = line.strip()
+                if '=' in line:
+                    key, val = line.split('=', 1)
+                    if key.strip() == 'Name':
+                        current_gpu['model'] = val.strip()
+                    elif key.strip() == 'AdapterRAM':
+                        try:
+                            bytes_val = int(val.strip())
+                            current_gpu['vram'] = max(1, round(bytes_val / (1024**3)))
+                        except:
+                            current_gpu['vram'] = 0
+                
+                # If we have both name and vram for one controller
+                if 'model' in current_gpu and 'vram' in current_gpu:
+                    model_lower = current_gpu['model'].lower()
+                    # Prioritize NVIDIA > AMD > Intel
+                    score = 0
+                    if "nvidia" in model_lower: score = 3
+                    elif "amd" in model_lower or "radeon" in model_lower: score = 2
+                    elif "intel" in model_lower: score = 1
+                    
+                    if not best_gpu or score > best_gpu['score']:
+                        best_gpu = {**current_gpu, 'score': score}
+                    current_gpu = {}
+
+            if best_gpu:
+                gpu_info["model"] = best_gpu["model"]
+                gpu_info["vram"] = best_gpu["vram"]
+                if "nvidia" in best_gpu["model"].lower(): gpu_info["manufacturer"] = "NVIDIA"
+                elif "amd" in best_gpu["model"].lower() or "radeon" in best_gpu["model"].lower(): gpu_info["manufacturer"] = "AMD"
+                elif "intel" in best_gpu["model"].lower(): gpu_info["manufacturer"] = "Intel"
+                print(f"[DEBUG] GPU detected via wmic: {gpu_info['model']}")
+
     except Exception as e:
         print(f"Error detecting hardware locally: {e}")
         

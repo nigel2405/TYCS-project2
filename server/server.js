@@ -99,6 +99,7 @@ io.on('connection', (socket) => {
 
   // Provider Agent Events
   socket.on('register-provider', (providerId) => {
+    socket.providerId = providerId.toString();
     socket.join(`provider:${providerId}`);
     console.log(`Provider ${providerId} registered on socket ${socket.id}`);
   });
