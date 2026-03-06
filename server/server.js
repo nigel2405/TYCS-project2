@@ -33,7 +33,8 @@ const io = new Server(httpServer, {
       process.env.CLIENT_URL || 'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:3002',
-      'https://gpu-sharing-frontend.onrender.com'
+      'https://gpu-sharing-frontend.onrender.com',
+      'https://gpu-sharing-admin.onrender.com'
     ],
     methods: ['GET', 'POST'],
     credentials: true
@@ -46,14 +47,16 @@ const corsOptions = {
     process.env.CLIENT_URL || 'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3002',
-    'https://gpu-sharing-frontend.onrender.com'
+    'https://gpu-sharing-frontend.onrender.com',
+    'https://gpu-sharing-admin.onrender.com'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With', 'Origin'],
   credentials: true
 };
 
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Explicitly handle preflight requests 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
