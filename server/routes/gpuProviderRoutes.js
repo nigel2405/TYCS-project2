@@ -9,6 +9,7 @@ import {
   getSessionHistory,
   getDetectGPU,
 } from '../controllers/gpuProviderController.js';
+import { downloadAgent } from '../controllers/agentController.js';
 import { protect, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -28,5 +29,8 @@ router.delete('/gpus/:id', deleteGPU);
 // Earnings and session history
 router.get('/earnings', getEarnings);
 router.get('/sessions', getSessionHistory);
+
+// Agent download
+router.get('/agent/download', downloadAgent);
 
 export default router;

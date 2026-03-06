@@ -149,6 +149,24 @@ const ProviderDashboard = () => {
     }
   };
 
+  const handleDownloadAgent = async () => {
+    try {
+      const response = await axios.get('/provider/agent/download', {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'gpushare-agent.zip');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setSuccessMsg('Download started! Follow the instructions below to set up your agent.');
+    } catch (err) {
+      setError('Failed to download agent. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="relative z-10">
@@ -261,6 +279,60 @@ const ProviderDashboard = () => {
             )}
           </GlassCard>
         )}
+
+        {/* GPU Provider Agent Setup Section */}
+        <GlassCard className="mb-8 border-primary-500/20 bg-gradient-to-r from-primary-500/5 to-secondary-500/5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                <span className="p-2 bg-primary-500/20 rounded-lg text-primary-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </span>
+                Run Your Local GPU Agent
+              </h2>
+              <p className="text-white/70 mb-4">
+                To start hosting workloads and earning money, you need to run our Python agent on your machine.
+                Your personal agent is pre-configured with your Provider ID.
+              </p>
+
+              <div className="space-y-3 mb-6">
+                <p className="text-sm font-semibold text-primary-500 uppercase tracking-wider">Setup Requirements</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-2 text-sm text-white/80 bg-white/5 p-2 rounded-lg border border-white/10">
+                    <span className="text-success-500">✓</span> Python 3.8+ Installed
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-white/80 bg-white/5 p-2 rounded-lg border border-white/10">
+                    <span className="text-success-500">✓</span> Docker Desktop Installed
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-secondary-500 uppercase tracking-wider">3-Step Quickstart</p>
+                <ol className="list-decimal list-inside text-sm text-white/70 space-y-2">
+                  <li>Download and unzip the agent package.</li>
+                  <li>In your terminal, run: <code className="bg-black/30 px-2 py-0.5 rounded text-secondary-400">pip install -r requirements.txt</code></li>
+                  <li>Run the agent: <code className="bg-black/30 px-2 py-0.5 rounded text-primary-400">python gpu_agent.py</code></li>
+                </ol>
+              </div>
+            </div>
+
+            <div className="md:w-72 flex flex-col gap-4">
+              <GlassButton
+                variant="primary"
+                className="w-full py-6 text-lg font-bold shadow-glow-primary"
+                onClick={handleDownloadAgent}
+              >
+                Download Agent (ZIP)
+              </GlassButton>
+              <p className="text-[10px] text-center text-white/40">
+                Supports Windows, Linux, and MacOS. One-click setup.
+              </p>
+            </div>
+          </div>
+        </GlassCard>
 
         {/* Active Sessions Section */}
         {earnings && earnings.recentSessions && earnings.recentSessions.filter(s => s.status === 'active').length > 0 && (
