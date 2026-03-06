@@ -18,13 +18,10 @@ export const requestWithdrawal = async (req, res, next) => {
 
         const user = await User.findById(req.user.id);
 
-        // Check if provider has enough funds. Assuming 1 USD = 85 INR, convert $5 requirement
-        const amountInr = amount * 85;
-
-        if (user.walletBalance < amountInr) {
+        if (user.walletBalance < amount) {
             return res.status(400).json({
                 success: false,
-                message: `Insufficient funds. You have ₹${user.walletBalance}, requested ₹${amountInr}`
+                message: `Insufficient funds. You have $${user.walletBalance}, requested $${amount}`
             });
         }
 
@@ -106,13 +103,12 @@ export const processWithdrawal = async (req, res, next) => {
         // If marking as completed, actually deduct from the provider's wallet balance
         if (status === 'completed') {
             const user = await User.findById(withdrawal.provider._id);
-            const amountInRate = withdrawal.amount * 85;
 
-            if (user.walletBalance < amountInRate) {
+            if (user.walletBalance < withdrawal.amount) {
                 return res.status(400).json({ success: false, message: 'Provider no longer has sufficient funds for this payout.' });
             }
 
-            user.walletBalance -= amountInRate;
+            user.walletBalance -= withdrawal.amount;
             await user.save();
         }
 
