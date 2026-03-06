@@ -101,11 +101,19 @@ io.on('connection', (socket) => {
 
       if (session) {
         if (error) {
-          // Handle error (optional: update status to failed)
           console.error(`Session ${sessionId} failed to start:`, error);
+          session.status = 'terminated';
+          session.cancellationReason = `Provisioning failed: ${error}`;
+          await session.save();
+
+          // Notify consumer of failure
+          io.to(`session:${sessionId}`).emit('session-failed', {
+            sessionId,
+            error: `Agent Error: ${error}`
+          });
         } else {
           session.connectionUrl = connectionUrl;
-          session.status = 'active'; // Confirmed active
+          session.status = 'active';
           await session.save();
 
           // Notify consumer

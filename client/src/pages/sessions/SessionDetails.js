@@ -85,6 +85,15 @@ const SessionDetails = () => {
       } : prev);
     });
 
+    newSocket.on('session-failed', (data) => {
+      console.error('Session failed:', data);
+      setError(data.error || 'Failed to provision session environment');
+      setSession(prev => prev ? {
+        ...prev,
+        status: 'terminated'
+      } : prev);
+    });
+
     return () => {
       newSocket.emit('leave-session', id);
       newSocket.close();
