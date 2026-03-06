@@ -366,14 +366,70 @@ export const getDetectGPU = async (req, res, next) => {
       });
     }
 
-    const gpuSpecs = await detectGPU();
+    const io = req.app.get('io');
+    const providerId = req.user.id;
+
+    // We check if at least one agent is connected for this provider
+    const rooms = io.sockets.adapter.rooms;
+    const providerRoom = rooms.get(`provider:${providerId}`);
+
+    if (!providerRoom || providerRoom.size === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No active GPU Agent detected. Please make sure your agent script is running on your PC.',
+      });
+    }
+
+    // Emit request to the provider's agent(s)
+    io.to(`provider:${providerId}`).emit('request-gpu-scan', { providerId });
+
+    // We'll wait for the response via a temporary listener or a promise
+    // To keep it simple and stateless for now, we'll use a one-time listener with a timeout
+    const getSpecsFromAgent = () => {
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          io.off('gpu-scan-results', handler);
+          reject(new Error('Hardware scan timed out. Please check if your agent is connected.'));
+        }, 15000);
+
+        const handler = (data) => {
+          // Check if this result is for the current provider
+          // (Agent might need to send providerId back)
+          // For now, since it's a room-based emit, we just take the first one that matches
+          // In a production environment, we'd use a unique request ID.
+          clearTimeout(timeout);
+          resolve(data);
+        };
+
+        // Note: This global listener is a bit risky if multiple providers scan at once.
+        // Let's refine the socket handler in server.js to emit to specific "scanners".
+        // For now, we'll use a better approach: the agent sends results, and we catch them.
+
+        // Better: Listen for a specific event from the socket
+        const sockets = io.sockets.adapter.rooms.get(`provider:${providerId}`);
+        if (sockets) {
+          const socketId = Array.from(sockets)[0];
+          const socket = io.sockets.sockets.get(socketId);
+
+          socket.once('gpu-scan-results', (results) => {
+            clearTimeout(timeout);
+            resolve(results);
+          });
+        }
+      });
+    };
+
+    const gpuSpecs = await getSpecsFromAgent();
 
     res.status(200).json({
       success: true,
-      message: 'GPU detected successfully',
+      message: 'GPU detected successfully by Agent',
       data: { gpuSpecs },
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to detect GPU via Agent',
+    });
   }
 };

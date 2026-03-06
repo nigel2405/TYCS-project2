@@ -23,6 +23,52 @@ if not PROVIDER_ID:
 # Global state to track active workloads
 active_workloads = {}
 
+def detect_gpu():
+    """Detects local GPU hardware specifications."""
+    gpu_info = {
+        "manufacturer": "Unknown",
+        "model": "Unknown Model",
+        "vram": 4
+    }
+    
+    try:
+        if os.name == 'nt':  # Windows
+            # Get GPU Name
+            cmd = "wmic path win32_VideoController get name"
+            output = subprocess.check_output(cmd, shell=True).decode()
+            lines = [l.strip() for l in output.split('\n') if l.strip() and 'Name' not in l]
+            if lines:
+                gpu_info["model"] = lines[0]
+                if "nvidia" in lines[0].lower(): gpu_info["manufacturer"] = "NVIDIA"
+                elif "amd" in lines[0].lower() or "radeon" in lines[0].lower(): gpu_info["manufacturer"] = "AMD"
+                elif "intel" in lines[0].lower(): gpu_info["manufacturer"] = "Intel"
+
+            # Get VRAM (AdapterRAM is in bytes)
+            cmd = "wmic path win32_VideoController get AdapterRAM"
+            output = subprocess.check_output(cmd, shell=True).decode()
+            ram_lines = [l.strip() for l in output.split('\n') if l.strip() and 'AdapterRAM' not in l]
+            if ram_lines:
+                try:
+                    bytes_val = int(ram_lines[0])
+                    gpu_info["vram"] = max(1, round(bytes_val / (1024**3))) # Convert to GB
+                except:
+                    pass
+        else: # Linux/Mac (Basic fallback)
+            try:
+                # Try nvidia-smi if available
+                output = subprocess.check_output("nvidia-smi --query-gpu=gpu_name,memory.total --format=csv,noheader,nounits", shell=True).decode()
+                parts = output.strip().split(',')
+                if len(parts) >= 2:
+                    gpu_info["model"] = parts[0].strip()
+                    gpu_info["manufacturer"] = "NVIDIA"
+                    gpu_info["vram"] = max(1, round(int(parts[1].strip()) / 1024))
+            except:
+                pass
+    except Exception as e:
+        print(f"Error detecting hardware locally: {e}")
+        
+    return gpu_info
+
 def check_docker():
     """Verifies if Docker is installed and running."""
     try:
@@ -129,6 +175,14 @@ def on_stop_workload(data):
             print(f"[ERROR] Cleanup error: {e}")
         del active_workloads[session_id]
         sio.emit('workload-stopped', {'sessionId': session_id})
+
+@sio.on('request-gpu-scan')
+def on_request_gpu_scan(data):
+    print("\n[INFO] Received hardware scan request from dashboard...")
+    gpu_info = detect_gpu()
+    print(f"Detected: {gpu_info['manufacturer']} {gpu_info['model']} ({gpu_info['vram']}GB)")
+    sio.emit('gpu-scan-results', gpu_info)
+    print("Sent scan results back to server.")
 
 def main():
     print("\n" + "="*50)
