@@ -71,7 +71,12 @@ const SessionDetails = () => {
 
   // Socket connection
   useEffect(() => {
-    const newSocket = io(process.env.REACT_APP_API_URL || '');
+    // Socket.io needs the base URL, NOT the /api prefixed one
+    const baseUrl = (process.env.REACT_APP_API_URL || '').replace(/\/api$/, '');
+    const newSocket = io(baseUrl, {
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5
+    });
     setSocket(newSocket);
 
     newSocket.emit('join-session', id);
@@ -92,6 +97,10 @@ const SessionDetails = () => {
         ...prev,
         status: 'terminated'
       } : prev);
+    });
+
+    newSocket.on('connect_error', (err) => {
+      console.warn('Socket connection error. Retrying...', err.message);
     });
 
     return () => {
@@ -115,18 +124,19 @@ const SessionDetails = () => {
         setTimeout(() => animatePageLoad(chatCardRef.current), 600);
       }
     }
-  }, [loading]); // Only animate when loading is explicitly finished
+  }, [loading]);
 
   useEffect(() => {
-    if (session?.status === 'active') {
+    // Only poll if the session is active AND we haven't hit a fatal error
+    if (session?.status === 'active' && !error) {
       const interval = setInterval(() => {
-        updateMetrics();
-        fetchSession();
-      }, 5000); // Update every 5 seconds
+        updateMetrics().catch(() => { }); // Silent catch for network flickers
+        fetchSession().catch(() => { });
+      }, 8000); // Increased to 8s to reduce overhead
 
       return () => clearInterval(interval);
     }
-  }, [session?.status, updateMetrics, fetchSession]);
+  }, [session?.status, error, updateMetrics, fetchSession]);
 
   const handleStartSession = async () => {
     try {
