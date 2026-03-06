@@ -125,12 +125,12 @@ const Register = () => {
 
       <div ref={containerRef} className="relative z-10 w-full max-w-md opacity-0">
         <GlassCard className="p-10 cursor-glow" cursorGlow>
-          <div ref={titleRef} className="mb-8">
-            <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
-              Create Account
+          <div ref={titleRef} className="mb-10 text-center">
+            <h1 className="text-5xl font-display font-extrabold mb-4 bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent tracking-tight">
+              Get Started
             </h1>
-            <p className="text-white/70 text-lg">
-              Join the GPU sharing platform
+            <p className="text-slate-400 text-lg font-light leading-relaxed px-4">
+              Join the future of decentralized GPU computing
             </p>
           </div>
 

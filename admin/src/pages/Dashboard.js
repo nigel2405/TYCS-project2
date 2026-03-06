@@ -29,15 +29,16 @@ const Dashboard = () => {
     <div ref={pageRef} className="relative z-10" style={{ opacity: 0 }}>
       <div
         ref={headerRef}
-        className="bg-gradient-to-r from-primary-500/20 via-secondary-500/20 to-primary-500/20 backdrop-blur-xl border-b border-white/10 py-16 mb-12 relative overflow-hidden"
+        className="bg-gradient-to-b from-slate-900/50 to-transparent border-b border-white/5 py-24 mb-16 relative overflow-hidden"
       >
-        <div className="max-w-7xl mx-auto px-5 relative z-10">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
-            Welcome, {user?.username}!
+        <div className="max-w-7xl mx-auto px-8 relative z-10">
+          <h1 className="text-6xl font-display font-extrabold mb-6 bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 bg-clip-text text-transparent tracking-tight">
+            Admin Console
           </h1>
-          <p className="text-white/80 text-xl">Manage your GPU sharing activities</p>
+          <p className="text-slate-400 text-2xl font-light">System oversight and platform management</p>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 to-secondary-500/5 opacity-50" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary-500/10 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2" />
       </div>
 
       <div className="max-w-7xl mx-auto px-5 pb-12">

@@ -69,11 +69,11 @@ const Login = () => {
 
       >
         <GlassCard className="p-10 cursor-glow" cursorGlow>
-          <div ref={titleRef} className="mb-8">
-            <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
+          <div ref={titleRef} className="mb-10 text-center">
+            <h1 className="text-5xl font-display font-extrabold mb-4 bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent tracking-tight">
               Welcome Back
             </h1>
-            <p className="text-white/70 text-lg">Sign in to your account</p>
+            <p className="text-slate-400 text-lg font-light leading-relaxed">Continue your journey in the GPU space</p>
           </div>
 
           {error && (
@@ -100,8 +100,8 @@ const Login = () => {
               <label
                 htmlFor="email"
                 className={`absolute left-4 transition-all duration-300 pointer-events-none z-20 ${focusedField === 'email' || formData.email
-                    ? 'top-2 text-xs text-primary-500'
-                    : 'top-4 text-base text-white/60'
+                  ? 'top-2 text-xs text-primary-500'
+                  : 'top-4 text-base text-white/60'
                   }`}
               >
                 Email Address
@@ -126,8 +126,8 @@ const Login = () => {
               <label
                 htmlFor="password"
                 className={`absolute left-4 transition-all duration-300 pointer-events-none z-20 ${focusedField === 'password' || formData.password
-                    ? 'top-2 text-xs text-primary-500'
-                    : 'top-4 text-base text-white/60'
+                  ? 'top-2 text-xs text-primary-500'
+                  : 'top-4 text-base text-white/60'
                   }`}
               >
                 Password

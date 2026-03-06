@@ -50,14 +50,14 @@ const Navbar = () => {
   return (
     <nav
       ref={navRef}
-      className="glass-dark fixed top-0 left-0 right-0 z-50 h-[80px] border-b border-white/10"
+      className="glass-dark fixed top-0 left-0 right-0 z-50 h-[72px] border-b border-white/5 shadow-premium"
       style={{ opacity: 0 }}
     >
-      <div className="max-w-7xl mx-auto px-5 h-full">
+      <div className="max-w-7xl mx-auto px-6 h-full">
         <div className="flex justify-between items-center h-full">
           <Link
             to="/"
-            className="text-2xl font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent no-underline hover:scale-105 transition-transform duration-300"
+            className="text-2xl font-display font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent no-underline tracking-tight hover:scale-105 transition-transform duration-300"
           >
             GPU Sharing Platform
           </Link>

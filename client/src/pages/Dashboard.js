@@ -29,15 +29,16 @@ const Dashboard = () => {
     <div ref={pageRef} className="relative z-10" >
       <div
         ref={headerRef}
-        className="bg-gradient-to-r from-primary-500/20 via-secondary-500/20 to-primary-500/20 backdrop-blur-xl border-b border-white/10 py-16 mb-12 relative overflow-hidden"
+        className="bg-gradient-to-b from-slate-900/50 to-transparent border-b border-white/5 py-24 mb-16 relative overflow-hidden"
       >
-        <div className="max-w-7xl mx-auto px-5 relative z-10">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
+        <div className="max-w-7xl mx-auto px-8 relative z-10">
+          <h1 className="text-6xl font-display font-extrabold mb-6 bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 bg-clip-text text-transparent tracking-tight">
             Welcome, {user?.username}!
           </h1>
-          <p className="text-white/80 text-xl">Manage your GPU sharing activities</p>
+          <p className="text-slate-400 text-2xl font-light">Efficient GPU sharing for your next project</p>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 to-secondary-500/5 opacity-50" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary-500/10 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2" />
       </div>
 
       <div className="max-w-7xl mx-auto px-5 pb-12">
@@ -149,25 +150,24 @@ const Dashboard = () => {
 
           <GlassCard
             ref={(el) => (cardsRef.current[cardsRef.current.length] = el)}
-            className="cursor-glow gradient-border"
+            className="cursor-glow gradient-border overflow-hidden group"
             cursorGlow
-
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-4 rounded-xl bg-gradient-to-r from-success-500/20 to-secondary-500/20 border border-success-500/30">
+            <div className="flex items-start justify-between mb-6">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-success-500/20 to-secondary-500/20 border border-success-500/30 group-hover:scale-110 transition-transform duration-500">
                 <svg className="w-8 h-8 text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-3">Wallet Balance</h2>
-            <p className="text-5xl font-bold mb-2 bg-gradient-to-r from-success-500 to-secondary-500 bg-clip-text text-transparent">
+            <h2 className="text-xl font-display font-semibold text-slate-300 mb-2">Wallet Balance</h2>
+            <p className="text-6xl font-display font-bold mb-4 bg-gradient-to-br from-success-500 to-secondary-500 bg-clip-text text-transparent tracking-tighter">
               ${user?.walletBalance?.toFixed(2) || '0.00'}
             </p>
-            <p className="text-white/70 mb-6 leading-relaxed">Add funds to your wallet to rent GPUs</p>
+            <p className="text-slate-500 text-sm mb-8 leading-relaxed">Directly access compute power with your instant balance</p>
             <Link
               to="/add-funds"
-              className="glass-button w-full px-6 py-3 rounded-xl text-white font-medium bg-gradient-to-r from-success-500/30 to-success-500/20 hover:shadow-lg hover:shadow-success-500/50 transition-all duration-300 text-center block"
+              className="glass-button w-full px-6 py-4 rounded-xl text-white font-semibold bg-gradient-to-r from-primary-500/10 to-transparent border border-primary-500/30 hover:bg-primary-500 hover:text-slate-950 transition-all duration-500 text-center block"
             >
               Add Funds
             </Link>
