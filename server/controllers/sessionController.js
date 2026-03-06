@@ -320,7 +320,7 @@ export const updateMetrics = async (req, res, next) => {
 // @access  Private
 export const getMetrics = async (req, res, next) => {
   try {
-    const session = await Session.findById(req.params.id).select('metrics status');
+    const session = await Session.findById(req.params.id).select('metrics status consumer provider');
 
     if (!session) {
       return res.status(404).json({
