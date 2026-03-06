@@ -32,7 +32,12 @@ const SessionDetails = () => {
       const res = await axios.get(`/sessions/${id}`);
       setSession(res.data.data.session);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch session');
+      if (err.response?.status === 404 || err.response?.status === 400) {
+        setSession(prev => prev ? { ...prev, status: 'terminated' } : null);
+        setError(err.response?.data?.message || 'Session is no longer active');
+      } else {
+        setError(err.response?.data?.message || 'Failed to fetch session');
+      }
     } finally {
       setLoading(false);
     }
@@ -46,8 +51,12 @@ const SessionDetails = () => {
       }
     } catch (err) {
       console.error('Failed to fetch metrics:', err);
+      // If we get a 400 on metrics, the session likely ended
+      if (err.response?.status === 400) {
+        fetchSession(); // Sync full session state
+      }
     }
-  }, [id]);
+  }, [id, fetchSession]);
 
   const updateMetrics = useCallback(async () => {
     try {
@@ -55,8 +64,11 @@ const SessionDetails = () => {
       fetchMetrics();
     } catch (err) {
       console.error('Failed to update metrics:', err);
+      if (err.response?.status === 400) {
+        fetchSession(); // Sync full session state
+      }
     }
-  }, [id, fetchMetrics]);
+  }, [id, fetchMetrics, fetchSession]);
 
   // Initial fetch
   useEffect(() => {

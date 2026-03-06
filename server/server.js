@@ -32,7 +32,8 @@ const io = new Server(httpServer, {
     origin: [
       process.env.CLIENT_URL || 'http://localhost:3000',
       'http://localhost:3001',
-      'http://localhost:3002'
+      'http://localhost:3002',
+      'https://gpu-sharing-frontend.onrender.com'
     ],
     methods: ['GET', 'POST'],
     credentials: true
