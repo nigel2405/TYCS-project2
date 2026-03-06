@@ -371,7 +371,15 @@ export const getDetectGPU = async (req, res, next) => {
 
     // Finding the agent socket more reliably by checking all sockets for the providerId property
     const allSockets = await io.fetchSockets();
-    const agentSocket = allSockets.find(s => s.providerId === providerId);
+    const agentSocket = allSockets.find(s => s.data && s.data.providerId === providerId);
+
+    console.log(`[DEBUG] Attempting hardware scan for Provider: ${providerId}`);
+    console.log(`[DEBUG] Total active sockets: ${allSockets.length}`);
+    if (!agentSocket) {
+      // Log what IDs we DO have to help debug (without sensitive info)
+      const connectedIds = allSockets.map(s => s.data?.providerId || 'no-id');
+      console.log(`[DEBUG] Connected Provider IDs:`, connectedIds);
+    }
 
     if (!agentSocket) {
       return res.status(400).json({

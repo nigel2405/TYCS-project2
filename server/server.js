@@ -99,9 +99,9 @@ io.on('connection', (socket) => {
 
   // Provider Agent Events
   socket.on('register-provider', (providerId) => {
-    socket.providerId = providerId.toString();
+    socket.data.providerId = providerId.toString();
     socket.join(`provider:${providerId}`);
-    console.log(`Provider ${providerId} registered on socket ${socket.id}`);
+    console.log(`[SOCKET] Provider ${providerId} registered on socket ${socket.id}`);
   });
 
   socket.on('workload-ready', async (data) => {
