@@ -111,7 +111,11 @@ export const finalizeSessionBilling = async (sessionId) => {
     session.status = 'completed';
     session.isBilled = true;
     await session.save();
-    return { alreadyBilled: true };
+    return {
+      alreadyBilled: true,
+      duration: session.duration || 0,
+      totalCost: session.totalCost || 0
+    };
   }
 
   // Calculate final cost
@@ -120,34 +124,46 @@ export const finalizeSessionBilling = async (sessionId) => {
 
   // Update session totals
   session.totalCost = (session.totalCost || 0) + cost;
-  session.duration = session.duration + minutesRemaining;
+  session.duration = (session.duration || 0) + minutesRemaining;
   session.lastBilledAt = endTime;
 
   // Deduct from consumer wallet
   const consumer = await User.findById(session.consumer._id || session.consumer);
-  if (consumer.walletBalance < cost) {
+  if (consumer && consumer.walletBalance < cost) {
     // Insufficient funds - mark as completed but log issue
     session.status = 'completed';
     session.isBilled = false;
     await session.save();
-    return { insufficientFunds: true, required: cost, available: consumer.walletBalance };
+    return {
+      insufficientFunds: true,
+      required: cost,
+      available: consumer.walletBalance,
+      duration: session.duration,
+      totalCost: session.totalCost
+    };
   }
 
-  consumer.walletBalance -= cost;
-  await consumer.save();
+  if (consumer) {
+    consumer.walletBalance -= cost;
+    await consumer.save();
+  }
 
   // Add to provider wallet
   const provider = await User.findById(session.provider._id || session.provider);
-  provider.walletBalance = (provider.walletBalance || 0) + cost;
-  await provider.save();
+  if (provider) {
+    provider.walletBalance = (provider.walletBalance || 0) + cost;
+    await provider.save();
+  }
 
   // Update GPU earnings
   const gpu = await GPU.findById(session.gpu._id || session.gpu);
-  gpu.totalEarnings = (gpu.totalEarnings || 0) + cost;
-  gpu.totalHoursRented = (gpu.totalHoursRented || 0) + hoursToBill;
-  gpu.currentSession = null;
-  gpu.isAvailable = true;
-  await gpu.save();
+  if (gpu) {
+    gpu.totalEarnings = (gpu.totalEarnings || 0) + cost;
+    gpu.totalHoursRented = (gpu.totalHoursRented || 0) + hoursToBill;
+    gpu.currentSession = null;
+    gpu.isAvailable = true;
+    await gpu.save();
+  }
 
   // Mark session as completed and billed
   session.status = 'completed';
@@ -158,7 +174,9 @@ export const finalizeSessionBilling = async (sessionId) => {
     finalized: true,
     cost,
     hoursToBill,
-    consumerBalance: consumer.walletBalance,
-    providerBalance: provider.walletBalance,
+    duration: session.duration,
+    totalCost: session.totalCost,
+    consumerBalance: consumer ? consumer.walletBalance : 0,
+    providerBalance: provider ? provider.walletBalance : 0,
   };
 };

@@ -175,7 +175,13 @@ const SessionDetails = () => {
         setShowReviewModal(true);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to stop session');
+      if (err.response?.status === 400) {
+        // Session might already be ended/not active
+        fetchSession();
+        setError(err.response?.data?.message || 'Session is no longer active');
+      } else {
+        setError(err.response?.data?.message || 'Failed to stop session');
+      }
     }
   };
 

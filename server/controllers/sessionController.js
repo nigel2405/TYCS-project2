@@ -142,22 +142,24 @@ export const stopSession = async (req, res, next) => {
       .populate('gpu', 'name model');
 
     // Send Receipt Email to Consumer (Non-blocking)
-    sendEmail({
-      email: updatedSession.consumer.email,
-      subject: `Receipt: GPU Session #${updatedSession._id.toString().substring(0, 8)}`,
-      html: `
-        <h2>Thank you for your business!</h2>
-        <p>Your session on the <strong>${updatedSession.gpu.name}</strong> has concluded.</p>
-        <ul>
-          <li><strong>Duration:</strong> ${(billingResult.duration / 60).toFixed(2)} hours</li>
-          <li><strong>Hourly Rate:</strong> $${updatedSession.hourlyRate}/hr</li>
-          <li><strong>Total Billed:</strong> $${billingResult.totalCost.toFixed(2)}</li>
-        </ul>
-        <p>This amount has been deducted from your platform wallet. You currently have $${req.user.walletBalance || 0} remaining.</p>
-      `
-    }).catch(emailErr => {
-      console.error('Failed to send receipt email to consumer:', emailErr);
-    });
+    if (billingResult) {
+      sendEmail({
+        email: updatedSession.consumer.email,
+        subject: `Receipt: GPU Session #${updatedSession._id.toString().substring(0, 8)}`,
+        html: `
+          <h2>Thank you for your business!</h2>
+          <p>Your session on the <strong>${updatedSession.gpu.name}</strong> has concluded.</p>
+          <ul>
+            <li><strong>Duration:</strong> ${((billingResult.duration || 0) / 60).toFixed(2)} hours</li>
+            <li><strong>Hourly Rate:</strong> $${updatedSession.hourlyRate}/hr</li>
+            <li><strong>Total Billed:</strong> $${(billingResult.totalCost || updatedSession.totalCost || 0).toFixed(2)}</li>
+          </ul>
+          <p>This amount has been deducted from your platform wallet. You currently have $${updatedSession.consumer.walletBalance || 0} remaining.</p>
+        `
+      }).catch(emailErr => {
+        console.error('Failed to send receipt email to consumer:', emailErr);
+      });
+    }
 
     res.status(200).json({
       success: true,
