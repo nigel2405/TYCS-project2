@@ -29,6 +29,7 @@ export const downloadAgent = async (req, res, next) => {
         const agentDirPath = path.join(__dirname, '../../agent');
         const agentFilePath = path.join(agentDirPath, 'gpu_agent.py');
         const requirementsPath = path.join(agentDirPath, 'requirements.txt');
+        const guidePath = path.join(agentDirPath, 'PROVIDER_SETUP_GUIDE.md');
 
         if (!fs.existsSync(agentFilePath) || !fs.existsSync(requirementsPath)) {
             return res.status(404).json({
@@ -54,6 +55,9 @@ export const downloadAgent = async (req, res, next) => {
         // append files from a sub-directory
         archive.file(agentFilePath, { name: 'gpu_agent.py' });
         archive.file(requirementsPath, { name: 'requirements.txt' });
+        if (fs.existsSync(guidePath)) {
+            archive.file(guidePath, { name: 'PROVIDER_SETUP_GUIDE.md' });
+        }
 
         // Create the .env file content
         const envContent = `SERVER_URL=${serverUrl}\nPROVIDER_ID=${providerId}\n`;

@@ -306,6 +306,9 @@ const ProviderDashboard = () => {
                   <div className="flex items-center gap-2 text-sm text-white/80 bg-white/5 p-2 rounded-lg border border-white/10">
                     <span className="text-success-500">✓</span> Docker Desktop Installed
                   </div>
+                  <div className="flex items-center gap-2 text-sm text-white/80 bg-white/5 p-2 rounded-lg border border-white/10 col-span-1 sm:col-span-2">
+                    <span className="text-success-500">✓</span> NVIDIA Container Toolkit (Required for GPU Passthrough)
+                  </div>
                 </div>
               </div>
 
@@ -313,6 +316,7 @@ const ProviderDashboard = () => {
                 <p className="text-sm font-semibold text-secondary-500 uppercase tracking-wider">3-Step Quickstart</p>
                 <ol className="list-decimal list-inside text-sm text-white/70 space-y-2">
                   <li>Download and unzip the agent package.</li>
+                  <li>Open the <code className="bg-black/30 px-2 py-0.5 rounded text-success-400 font-bold text-[11px]">PROVIDER_SETUP_GUIDE.md</code> (included in your ZIP) for step-by-step NVIDIA GPU setup.</li>
                   <li>In your terminal, run: <code className="bg-black/30 px-2 py-0.5 rounded text-secondary-400">pip install -r requirements.txt</code></li>
                   <li>Run the agent: <code className="bg-black/30 px-2 py-0.5 rounded text-primary-400">python gpu_agent.py</code></li>
                 </ol>

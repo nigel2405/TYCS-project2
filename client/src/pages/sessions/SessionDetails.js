@@ -102,6 +102,29 @@ const SessionDetails = () => {
       } : prev);
     });
 
+    newSocket.on('metrics-update', (data) => {
+      setMetrics(prev => {
+        const newMetrics = prev ? { ...prev } : {
+          gpuUtilization: [],
+          temperature: [],
+          memoryUsed: []
+        };
+
+        return {
+          ...newMetrics,
+          gpuUtilization: [...(newMetrics.gpuUtilization || []), data.utilization].slice(-100),
+          temperature: [...(newMetrics.temperature || []), data.temperature].slice(-100),
+          memoryUsed: [...(newMetrics.memoryUsed || []), data.memoryUsed].slice(-100),
+          lastUpdated: data.lastUpdated,
+          averages: {
+            utilization: data.utilization,
+            temperature: data.temperature,
+            memoryUsed: data.memoryUsed
+          }
+        };
+      });
+    });
+
     newSocket.on('session-failed', (data) => {
       console.error('Session failed:', data);
       setError(data.error || 'Failed to provision session environment');
@@ -368,6 +391,24 @@ const SessionDetails = () => {
                   <p className="text-white/70"><strong className="text-white">IP:</strong> <span className="text-primary-500">{session.connectionDetails.ip}</span></p>
                   <p className="text-white/70"><strong className="text-white">Port:</strong> <span className="text-primary-500">{session.connectionDetails.port}</span></p>
                   <p className="text-white/70"><strong className="text-white">Access Token:</strong> <span className="text-primary-500 font-mono text-sm">{session.connectionDetails.accessToken}</span></p>
+                </div>
+              </div>
+            )}
+
+            {session.status === 'active' && (
+              <div className="mt-6 p-4 glass-card bg-primary-500/10 border-primary-500/30 rounded-xl">
+                <div className="flex gap-3">
+                  <div className="text-primary-500 mt-1">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-white font-bold text-sm mb-1">How to verify your GPU?</h4>
+                    <p className="text-white/70 text-xs leading-relaxed">
+                      Once you launch the environment, you can verify the hardware by running <code className="bg-black/30 px-1 rounded text-primary-400">!nvidia-smi</code> in any notebook cell.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}

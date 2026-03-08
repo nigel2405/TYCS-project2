@@ -272,7 +272,7 @@ export const getSession = async (req, res, next) => {
   }
 };
 
-// @desc    Update session metrics (mock data for monitoring)
+// @desc    Update session metrics (Legacy/Internal manually triggered sync)
 // @route   PUT /api/sessions/:id/metrics
 // @access  Private
 export const updateMetrics = async (req, res, next) => {
@@ -286,29 +286,10 @@ export const updateMetrics = async (req, res, next) => {
       });
     }
 
-    // Generate mock metrics
-    const metrics = {
-      gpuUtilization: [
-        ...(session.metrics?.gpuUtilization || []),
-        Math.floor(Math.random() * 100),
-      ].slice(-100), // Keep last 100 readings
-      temperature: [
-        ...(session.metrics?.temperature || []),
-        40 + Math.floor(Math.random() * 40),
-      ].slice(-100),
-      memoryUsed: [
-        ...(session.metrics?.memoryUsed || []),
-        Math.floor(Math.random() * 10000),
-      ].slice(-100),
-      lastUpdated: new Date(),
-    };
-
-    session.metrics = metrics;
-    await session.save();
-
+    // Acknowledge the request, metrics are now pushed by the agent
     res.status(200).json({
       success: true,
-      data: { metrics },
+      data: { metrics: session.metrics },
     });
   } catch (error) {
     next(error);

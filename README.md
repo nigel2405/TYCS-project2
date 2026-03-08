@@ -54,6 +54,7 @@ A local daemon that runs directly on the **Provider's hardware**.
 - Python (3.8+)
 - MongoDB (Running locally on 27017 or Cloud URI)
 - Ngrok Account & Auth Token
+- NVIDIA Container Toolkit (Required for Providers to share hardware)
 
 ### 1. Booting the Server
 ```bash

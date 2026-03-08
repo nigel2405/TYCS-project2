@@ -14,6 +14,14 @@ load_dotenv()
 
 SERVER_URL = os.getenv('SERVER_URL', 'http://localhost:5000')
 PROVIDER_ID = os.getenv('PROVIDER_ID')
+NGROK_AUTH_TOKEN = os.getenv('NGROK_AUTH_TOKEN')
+
+if NGROK_AUTH_TOKEN:
+    print("[INFO] Setting Ngrok Auth Token...")
+    ngrok.set_auth_token(NGROK_AUTH_TOKEN)
+else:
+    print("[WARNING] NGROK_AUTH_TOKEN not found in .env. Ngrok may fail if authentication is required.")
+
 
 if not PROVIDER_ID:
     print("\n[ERROR] PROVIDER_ID not found in .env")
@@ -173,9 +181,25 @@ def on_start_workload(data):
             try:
                 tunnel = ngrok.connect(port)
                 full_url = f"{tunnel.public_url}/lab?token={token}"
-                active_workloads[session_id] = {'process': process, 'tunnel': tunnel}
+                active_workloads[session_id] = {'process': process, 'tunnel': tunnel, 'active': True}
                 sio.emit('workload-ready', {'sessionId': session_id, 'connectionUrl': full_url, 'status': 'active'})
                 print(f"[SUCCESS] Workload active: {full_url}")
+
+                # Start metrics reporting thread for this session
+                def report_metrics():
+                    while session_id in active_workloads and active_workloads[session_id].get('active'):
+                        gpu_data = detect_gpu_metrics()
+                        if gpu_data:
+                            sio.emit('session-metrics', {
+                                'sessionId': session_id,
+                                'utilization': gpu_data['utilization'],
+                                'temperature': gpu_data['temperature'],
+                                'memoryUsed': gpu_data['memoryUsed']
+                            })
+                        time.sleep(10) # Report every 10 seconds
+                
+                threading.Thread(target=report_metrics, daemon=True).start()
+
             except Exception as e:
                 print(f"Ngrok error: {e}")
                 subprocess.run(['docker', 'stop', process], stdout=subprocess.DEVNULL)
@@ -184,6 +208,26 @@ def on_start_workload(data):
             print(f"[ERROR] {e}")
             sio.emit('workload-ready', {'sessionId': session_id, 'error': str(e)})
     threading.Thread(target=spawn_and_notify).start()
+
+def detect_gpu_metrics():
+    """Collects real-time GPU performance metrics."""
+    try:
+        # Try nvidia-smi for real-time stats
+        output = subprocess.check_output(
+            "nvidia-smi --query-gpu=utilization.gpu,temperature.gpu,memory.used --format=csv,noheader,nounits", 
+            shell=True, stderr=subprocess.DEVNULL
+        ).decode()
+        parts = output.strip().split(',')
+        if len(parts) >= 3:
+            return {
+                "utilization": int(parts[0].strip()),
+                "temperature": int(parts[1].strip()),
+                "memoryUsed": int(parts[2].strip())
+            }
+    except:
+        # Fallback to zeros if not available
+        pass
+    return None
 
 @sio.on('stop-workload')
 def on_stop_workload(data):

@@ -145,6 +145,35 @@ io.on('connection', (socket) => {
       console.error('Error handling workload-ready:', err);
     }
   });
+
+  socket.on('session-metrics', async (data) => {
+    try {
+      const { sessionId, utilization, temperature, memoryUsed } = data;
+      const Session = (await import('./models/Session.js')).default;
+
+      // Update session metrics in DB (efficient update)
+      await Session.findByIdAndUpdate(sessionId, {
+        $push: {
+          'metrics.gpuUtilization': utilization,
+          'metrics.temperature': temperature,
+          'metrics.memoryUsed': memoryUsed
+        },
+        $set: {
+          'metrics.lastUpdated': new Date()
+        }
+      });
+
+      // Broadcast to consumer/observers
+      io.to(`session:${sessionId}`).emit('metrics-update', {
+        utilization,
+        temperature,
+        memoryUsed,
+        lastUpdated: new Date()
+      });
+    } catch (err) {
+      console.error('Error handling session-metrics:', err);
+    }
+  });
 });
 
 // Make io accessible to routes
