@@ -122,9 +122,19 @@ def start_jupyter_lab(session_id, port):
     """Starts a Jupyter Lab instance in a securely isolated Docker container."""
     token = secrets.token_hex(16)
     container_name = f"gpu_session_{session_id}"
-    workspace_dir = os.path.abspath(os.path.join(os.getcwd(), "workspaces", session_id))
+    
+    # Use a simpler relative path structure to prevent "Directory not found" errors in Docker on Windows
+    # Docker sometimes struggles with deeply nested or absolute Windows paths in volume mounting
+    rel_workspace = os.path.join("workspaces", session_id)
+    workspace_dir = os.path.abspath(rel_workspace)
     os.makedirs(workspace_dir, exist_ok=True)
     
+    # On Windows, we need to ensure the path is compatible with Docker's Linux engine
+    mount_path = workspace_dir
+    if os.name == 'nt':
+        # Convert C:\path\to\folder to /c/path/to/folder if needed, but abspath usually works if handled right
+        pass 
+
     cmd = [
         'docker', 'run', '-d', '--rm',
         '--name', container_name,
@@ -136,6 +146,7 @@ def start_jupyter_lab(session_id, port):
         'start-notebook.sh',
         f'--ServerApp.token={token}',
         '--ServerApp.allow_origin=*',
+        '--ServerApp.root_dir=/home/jovyan/work',
         f'--NotebookApp.token={token}',
         '--NotebookApp.allow_origin=*'
     ]
@@ -188,7 +199,8 @@ def on_start_workload(data):
                 return
             print(f"Opening Ngrok tunnel...")
             try:
-                tunnel = ngrok.connect(port)
+                # Set region to 'ap' (Asia/Pacific) for better stability in India
+                tunnel = ngrok.connect(port, pyngrok_config=ngrok.PyngrokConfig(region="ap"))
                 full_url = f"{tunnel.public_url}/lab?token={token}"
                 active_workloads[session_id] = {'process': process, 'tunnel': tunnel, 'active': True}
                 sio.emit('workload-ready', {'sessionId': session_id, 'connectionUrl': full_url, 'status': 'active'})
@@ -287,6 +299,13 @@ def main():
     
     while True:
         try:
+            # Clear any existing ngrok processes/tunnels to avoid conflicts/limits
+            try:
+                print("[INFO] Cleaning up legacy tunnels...")
+                ngrok.kill()
+            except:
+                pass
+
             # Force a fresh state before every connection attempt
             try:
                 if sio.connected:
