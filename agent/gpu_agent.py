@@ -124,7 +124,7 @@ def start_jupyter_lab(session_id, port):
         '-e', 'JUPYTER_ENABLE_LAB=yes',
         '-p', f'{port}:8888',
         '-v', f'{workspace_dir}:/home/jovyan/work',
-        'jupyter/minimal-notebook',
+        'jupyter/scipy-notebook',
         'start-notebook.sh',
         f'--ServerApp.token={token}',
         '--ServerApp.allow_origin=*',

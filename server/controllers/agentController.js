@@ -60,7 +60,7 @@ export const downloadAgent = async (req, res, next) => {
         }
 
         // Create the .env file content
-        const envContent = `SERVER_URL=${serverUrl}\nPROVIDER_ID=${providerId}\n`;
+        const envContent = `SERVER_URL=${serverUrl}\nPROVIDER_ID=${providerId}\n# Get your token from https://dashboard.ngrok.com/get-started/your-authtoken\nNGROK_AUTH_TOKEN=\n`;
         archive.append(envContent, { name: '.env' });
 
         // finalize the archive
