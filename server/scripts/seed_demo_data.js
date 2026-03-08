@@ -52,13 +52,13 @@ const seedData = async () => {
                 email: 'consumer@demo.com',
                 password: 'password123',
                 role: 'consumer',
-                walletBalance: 5000
+                walletBalance: 100
             });
-            console.log('Created Demo Consumer: consumer@demo.com / password123 (Balance: ₹5000)');
+            console.log('Created Demo Consumer: consumer@demo.com / password123 (Balance: $100)');
         } else {
-            consumer.walletBalance = 5000;
+            consumer.walletBalance = 100;
             await consumer.save();
-            console.log('Demo Consumer exists. Reset balance to ₹5000.');
+            console.log('Demo Consumer exists. Reset balance to $100.');
         }
 
         // 3. Create Demo GPU
@@ -69,7 +69,8 @@ const seedData = async () => {
                 manufacturer: 'NVIDIA',
                 model: 'RTX 4090',
                 vram: 24,
-                pricePerHour: 100,
+                clockSpeed: 2520,
+                pricePerHour: 1.5,
                 provider: provider._id,
                 isAvailable: true
             });

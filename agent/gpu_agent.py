@@ -4,6 +4,7 @@ import os
 import time
 import json
 import subprocess
+import socket
 import secrets
 import threading
 from dotenv import load_dotenv
@@ -101,6 +102,13 @@ def detect_gpu():
         
     return gpu_info
 
+def get_free_port():
+    """Finds an available TCP port."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(('', 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
+
 def check_docker():
     """Verifies if Docker is installed and running."""
     try:
@@ -172,7 +180,8 @@ def on_start_workload(data):
     print(f"\n[INFO] Starting workload for session: {session_id}")
     def spawn_and_notify():
         try:
-            port = 8888 
+            port = get_free_port()
+            print(f"Allocated dynamic port: {port}")
             process, token = start_jupyter_lab(session_id, port)
             if not process:
                 sio.emit('workload-ready', {'sessionId': session_id, 'error': 'Failed to spawn Jupyter Lab.'})

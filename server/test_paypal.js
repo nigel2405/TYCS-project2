@@ -5,15 +5,15 @@ const environment = new paypal.core.SandboxEnvironment(process.env.PAYPAL_CLIENT
 const client = new paypal.core.PayPalHttpClient(environment);
 
 async function test() {
-    console.log("Testing with INR...");
+    console.log("Testing with USD...");
     const request = new paypal.orders.OrdersCreateRequest();
     request.prefer('return=representation');
     request.requestBody({
         intent: 'CAPTURE',
         purchase_units: [{
             amount: {
-                currency_code: 'INR',
-                value: '100.00'
+                currency_code: 'USD',
+                value: '10.00'
             }
         }]
     });
