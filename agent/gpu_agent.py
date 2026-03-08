@@ -197,14 +197,21 @@ def on_start_workload(data):
                 # Start metrics reporting thread for this session
                 def report_metrics():
                     while session_id in active_workloads and active_workloads[session_id].get('active'):
-                        gpu_data = detect_gpu_metrics()
-                        if gpu_data:
-                            sio.emit('session-metrics', {
-                                'sessionId': session_id,
-                                'utilization': gpu_data['utilization'],
-                                'temperature': gpu_data['temperature'],
-                                'memoryUsed': gpu_data['memoryUsed']
-                            })
+                        try:
+                            # Only report if we are actually connected to avoid BadNamespaceError
+                            if sio.connected:
+                                gpu_data = detect_gpu_metrics()
+                                if gpu_data:
+                                    sio.emit('session-metrics', {
+                                        'sessionId': session_id,
+                                        'utilization': gpu_data['utilization'],
+                                        'temperature': gpu_data['temperature'],
+                                        'memoryUsed': gpu_data['memoryUsed']
+                                    })
+                        except Exception as e:
+                            # Log error but keep the thread alive for reconnection
+                            print(f"[METRICS ERROR] {e}")
+                            
                         time.sleep(10) # Report every 10 seconds
                 
                 threading.Thread(target=report_metrics, daemon=True).start()
